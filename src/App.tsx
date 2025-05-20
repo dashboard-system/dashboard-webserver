@@ -1,18 +1,18 @@
-import { useState } from "react";
-import "./App.css";
-import SideBar from "./components/sidebar/SideBar";
-import TopPane from "./components/toppane/TopPane";
-import ResponsiveDrawer from "./demo";
+import './App.css'
+import SideBar from './components/sidebar/SideBar'
+import TopPane from './components/toppane/TopPane'
+import ResponsiveDrawer from './demo'
+import MainContent from './pages/MainContent'
 
 function App() {
   return (
     <>
-      {/* <ResponsiveDrawer />  */}
+      {/* <ResponsiveDrawer /> */}
       <SideBar />
       <TopPane />
-      {/* Main Content */}
+      <MainContent />
     </>
-  );
+  )
 }
 
-export default App;
+export default App
