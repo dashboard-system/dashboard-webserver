@@ -1,4 +1,22 @@
-# React + TypeScript + Vite
+# Dashboard UI
+
+## Todo List ##
+1.  design dashboard []
+2.  use Redux, global state management []
+3.  use MUI, system design, share component []
+4.  use typescript []
+5.  use Page context []
+6.  use auth management []
+7.  api request []
+8.  mqtt client management []
+9.  setup local dev - vite, proxy stuff[]
+10. deployment for web server(drogon || node.js) []
+11. use lazy& suspense to manage unload UI
+
+### additionial todo list ###
+1. google&git account login []
+2. deployment for desktop app(electron || tauri) []
+2. deployment for mobile app(tauri || react native) []
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
@@ -53,20 +71,3 @@ export default tseslint.config({
 })
 ```
 
-### Todo List ###
-1.  design dashboard []
-2.  use Redux, global state management []
-3.  use MUI, system design, share component []
-4.  use typescript []
-5.  use Page context []
-6.  use auth management []
-7.  api request []
-8.  mqtt client management []
-9.  setup local dev - vite, proxy stuff[]
-10. deployment for web server(drogon || node.js) []
-11. use lazy& suspense to manage unload UI
-
-additionial todo list
-1. google&git account login []
-2. deployment for desktop app(electron || tauri) []
-2. deployment for mobile app(tauri || react native) []
