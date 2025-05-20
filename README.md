@@ -12,6 +12,7 @@
 9.  setup local dev - vite, proxy stuff[]
 10. deployment for web server(drogon || node.js) []
 11. use lazy& suspense to manage unload UI
+12. handle drak mode []
 
 ### additionial todo list ###
 1. google&git account login []
