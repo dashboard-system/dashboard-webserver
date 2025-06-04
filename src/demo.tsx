@@ -83,7 +83,7 @@ export default function ResponsiveDrawer(props: Props) {
 
   return (
     <Box sx={{ display: 'flex' }}>
-      <CssBaseline />123
+      <CssBaseline />
       <AppBar
         position="fixed"
         sx={{

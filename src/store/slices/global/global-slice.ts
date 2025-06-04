@@ -6,13 +6,16 @@ const initialPageStatus: PageStatus = {
   theme: 'system',
   currentPage: 'landing',
   isSideBarExpand: false,
-  setIsSideBarClosing: false,
+  isSideBarClosing: false,
   isLogin: false,
 }
 
 const initialState: GlobalState = {
   pageStatus: initialPageStatus,
-  gettings: 'Hola',
+  greetings: 'Hola',
+  pageList: [
+    { path: '/settings', label: 'Settings', componentName: 'settings'  },
+  ],
 }
 
 const globalSlice = createSlice({
@@ -33,7 +36,7 @@ const globalSlice = createSlice({
       state.pageStatus.isSideBarExpand = action.payload
     },
     setGettings(state, action: PayloadAction<string>) {
-      state.gettings = action.payload
+      state.greetings = action.payload
     },
     resetUIStatus(state) {
       state.pageStatus = initialPageStatus
@@ -46,5 +49,6 @@ export const {
   updatePageStatus,
   setIsSideBarExpand,
   resetUIStatus,
+  setGettings
 } = globalSlice.actions
 export default globalSlice.reducer

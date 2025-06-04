@@ -4,13 +4,22 @@ interface PageStatus {
   theme: ThemeMode
   currentPage: string
   isSideBarExpand: boolean
-  setIsSideBarClosing: boolean
+  isSideBarClosing: boolean
   isLogin: boolean
 }
 
-interface GlobalState {
-  pageStatus: PageStatus
-  gettings: string
+interface PageItem {
+  path: string
+  label: string
+  componentName: string
 }
 
-export type { PageStatus, GlobalState }
+type PageList = PageItem[]
+
+interface GlobalState {
+  pageStatus: PageStatus
+  greetings: string
+  pageList: PageList
+}
+
+export type { PageStatus, GlobalState, PageItem }

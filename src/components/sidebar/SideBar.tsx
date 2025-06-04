@@ -12,7 +12,10 @@ import MailIcon from '@mui/icons-material/Mail'
 import Brand from './Brand'
 import { useAppDispatch, useAppSelector } from '../../store/hook'
 import { updatePageStatus } from '../../store/slices/global/global-slice'
-import { sidebarList } from '../../libs/constants/sidebar'
+import { lazySidebarIcons } from '../../libs/constants/sidebar'
+import { Link } from 'react-router'
+import type { PageItem } from '../../libs/store/global'
+import React, { Suspense } from 'react'
 
 const drawerWidth = 240
 
@@ -26,6 +29,7 @@ interface Props {
 
 export default function SideBar(props: Props) {
   const pageStatus = useAppSelector((state) => state.global.pageStatus)
+  const pageList = useAppSelector((state) => state.global.pageList)
   const dispatch = useAppDispatch()
   const { window } = props
 
@@ -33,7 +37,7 @@ export default function SideBar(props: Props) {
     dispatch(
       updatePageStatus({
         ...pageStatus,
-        setIsSideBarClosing: true,
+        isSideBarClosing: true,
         isSideBarExpand: false,
       }),
     )
@@ -43,9 +47,13 @@ export default function SideBar(props: Props) {
     dispatch(
       updatePageStatus({
         ...pageStatus,
-        setIsSideBarClosing: false,
+        isSideBarClosing: false,
       }),
     )
+  }
+
+  const createSideBarIcon = (name:string) => {
+    return React.createElement(lazySidebarIcons[name])
   }
 
   const drawer = (
@@ -54,13 +62,18 @@ export default function SideBar(props: Props) {
       <Divider />
 
       <List>
-        {sidebarList.map((text, index) => (
-          <ListItem key={text} disablePadding>
+        {pageList.map((pageItem: PageItem, index) => (
+          <ListItem key={pageItem.label} disablePadding>
             <ListItemButton>
               <ListItemIcon>
-                {index % 2 === 0 ? <InboxIcon /> : <MailIcon />}
+                {/* {index % 2 === 0 ? <InboxIcon /> : <MailIcon />} */}
+                <Suspense fallback={null}>
+                  {createSideBarIcon(pageItem.componentName)}
+                </Suspense>
               </ListItemIcon>
-              <ListItemText primary={text} />
+              <Link to={pageItem.path} color="inherit">
+                <ListItemText primary={pageItem.label} />
+              </Link>
             </ListItemButton>
           </ListItem>
         ))}
@@ -73,7 +86,7 @@ export default function SideBar(props: Props) {
     window !== undefined ? () => window().document.body : undefined
 
   return (
-    <Box sx={{ display: 'flex' }}>
+    <>
       <CssBaseline />
       <Box
         component="nav"
@@ -116,6 +129,6 @@ export default function SideBar(props: Props) {
           {drawer}
         </Drawer>
       </Box>
-    </Box>
+    </>
   )
 }

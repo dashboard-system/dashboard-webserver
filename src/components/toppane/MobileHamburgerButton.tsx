@@ -8,7 +8,7 @@ function MobileHamburgerButton() {
   const dispatch = useAppDispatch()
 
   const handleDrawerToggle = () => {
-    if (!pageStatus.setIsSideBarClosing) {
+    if (!pageStatus.isSideBarClosing) {
       dispatch(
         updatePageStatus({
           ...pageStatus,

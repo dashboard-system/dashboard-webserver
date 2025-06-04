@@ -2,9 +2,9 @@
 
 ## Todo List ##
 1.  design dashboard []
-2.  use Redux, global state management []
-3.  use MUI, system design, share component []
-4.  use typescript []
+2.  use Redux, global state management [x]
+3.  use MUI, system design, share component [x]
+4.  use typescript [x]
 5.  use Page context []
 6.  use auth management []
 7.  api request []
@@ -17,7 +17,8 @@
 ### additionial todo list ###
 1. google&git account login []
 2. deployment for desktop app(electron || tauri) []
-2. deployment for mobile app(tauri || react native) []
+3. deployment for mobile app(tauri || react native) []
+4. mobile version - elements cant be selected and drag. []
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 

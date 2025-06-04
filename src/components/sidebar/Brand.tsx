@@ -1,5 +1,6 @@
 import { Snowboarding } from '@mui/icons-material'
 import { Toolbar, Typography } from '@mui/material'
+import LogoIcon from '../LogoIcon'
 
 const style = {
   icon: { display: { sm: 'flex' }, mr: 1 },
@@ -17,7 +18,8 @@ const style = {
 function Brand() {
   return (
     <Toolbar>
-      <Snowboarding sx={style.icon} />
+      {/* <Snowboarding sx={style.icon} /> */}
+      <LogoIcon sx={style.icon} fontSize="large" />
       <Typography
         variant="h6"
         noWrap

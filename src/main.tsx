@@ -6,13 +6,16 @@ import { Provider } from 'react-redux'
 import { store } from './store/store.ts'
 import { CssBaseline, ThemeProvider } from '@mui/material'
 import { theme } from './theme/DashboardTheme.ts'
+import { PageContextProvider } from './components/context/PageContext.tsx'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <ThemeProvider theme={theme} defaultMode="dark">
+    <ThemeProvider theme={theme} defaultMode="light">
       <Provider store={store}>
-        <CssBaseline />
-        <App />
+        <PageContextProvider>
+          <CssBaseline />
+          <App />
+        </PageContextProvider>
       </Provider>
     </ThemeProvider>
   </StrictMode>,
