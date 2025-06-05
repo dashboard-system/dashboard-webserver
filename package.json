@@ -19,9 +19,12 @@
   "homepage": "https://github.com/Coffee-Dog/dashboard-web-node#readme",
   "description": "a web server serve for dashbaord UI [https://github.com/Coffee-Dog/dashboard-ui]",
   "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/better-sqlite3": "^7.6.13",
     "@types/cors": "^2.8.18",
     "@types/express": "^5.0.2",
     "@types/helmet": "^0.0.48",
+    "@types/jsonwebtoken": "^9.0.9",
     "@types/morgan": "^1.9.9",
     "@types/node": "^22.15.29",
     "nodemon": "^3.1.10",
@@ -29,10 +32,15 @@
     "typescript": "^5.8.3"
   },
   "dependencies": {
+    "bcryptjs": "^3.0.2",
+    "better-sqlite3": "^11.10.0",
     "cors": "^2.8.5",
     "dotenv": "^16.5.0",
     "express": "^5.1.0",
     "helmet": "^8.1.0",
-    "morgan": "^1.10.0"
+    "jsonwebtoken": "^9.0.2",
+    "morgan": "^1.10.0",
+    "path-to-regexp": "^8.2.0",
+    "sqlite3": "^5.1.7"
   }
 }
