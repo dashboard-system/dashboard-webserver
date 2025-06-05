@@ -7,7 +7,7 @@ const initialPageStatus: PageStatus = {
   currentPage: 'landing',
   isSideBarExpand: false,
   isSideBarClosing: false,
-  isLogin: false,
+  isLogin: true,
 }
 
 const initialState: GlobalState = {

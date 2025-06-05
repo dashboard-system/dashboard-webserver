@@ -12,7 +12,7 @@ const pageMap: Record<string, React.LazyExoticComponent<ComponentType<any>>> = {
 
 function PageSuspenseRoute({ componentName }: PageSuspenseRouteProps) {
   const DisplayedPage = useMemo(() => pageMap[componentName], [componentName])
-
+  
   if (!DisplayedPage) {
     return <div>Component not found: {componentName}</div>
   }

@@ -1,19 +1,19 @@
 import { createContext, type ReactNode } from 'react'
 import { useColorScheme } from '@mui/material/styles'
+import { useAppSelector } from '../../store/hook'
 
-type PageContextType = {
-  placeholder: string
+export type PageContextType = {
+  isLogin: boolean
 }
 
 const PageContext = createContext<PageContextType | null>(null)
 
 const PageContextProvider = ({ children }: { children: ReactNode }) => {
   const { mode, setMode } = useColorScheme()
-  const placeholder = '123'
+  const isLogin = useAppSelector((state) => state.global.pageStatus.isLogin)
+
   return (
-    <PageContext.Provider value={{ placeholder }}>
-      {children}
-    </PageContext.Provider>
+    <PageContext.Provider value={{ isLogin }}>{children}</PageContext.Provider>
   )
 }
 

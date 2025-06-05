@@ -9,6 +9,7 @@ import { Box, ThemeProvider } from '@mui/material'
 import PageSuspenseRoute from './components/suspense/PageSuspenseRoute'
 import Error404 from './pages/404/Error404'
 import { theme } from './theme/DashboardTheme'
+
 function App() {
   return (
     <BrowserRouter>

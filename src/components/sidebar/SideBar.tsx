@@ -16,6 +16,7 @@ import { lazySidebarIcons } from '../../libs/constants/sidebar'
 import { Link } from 'react-router'
 import type { PageItem } from '../../libs/store/global'
 import React, { Suspense } from 'react'
+import PageList from './PageList'
 
 const drawerWidth = 240
 
@@ -30,6 +31,7 @@ interface Props {
 export default function SideBar(props: Props) {
   const pageStatus = useAppSelector((state) => state.global.pageStatus)
   const pageList = useAppSelector((state) => state.global.pageList)
+  const isLogin = pageStatus.isLogin
   const dispatch = useAppDispatch()
   const { window } = props
 
@@ -52,7 +54,7 @@ export default function SideBar(props: Props) {
     )
   }
 
-  const createSideBarIcon = (name:string) => {
+  const createSideBarIcon = (name: string) => {
     return React.createElement(lazySidebarIcons[name])
   }
 
@@ -60,7 +62,6 @@ export default function SideBar(props: Props) {
     <>
       <Brand />
       <Divider />
-
       <List>
         {pageList.map((pageItem: PageItem, index) => (
           <ListItem key={pageItem.label} disablePadding>
@@ -113,7 +114,9 @@ export default function SideBar(props: Props) {
             },
           }}
         >
-          {drawer}
+          <Brand />
+          <Divider />
+          <Suspense>{isLogin ? <PageList /> : <></>}</Suspense>
         </Drawer>
         <Drawer
           variant="permanent"
@@ -126,7 +129,9 @@ export default function SideBar(props: Props) {
           }}
           open
         >
-          {drawer}
+          <Brand />
+          <Divider />
+          <Suspense>{isLogin ? <PageList /> : <></>}</Suspense>
         </Drawer>
       </Box>
     </>

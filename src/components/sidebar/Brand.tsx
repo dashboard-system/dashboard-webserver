@@ -1,4 +1,3 @@
-import { Snowboarding } from '@mui/icons-material'
 import { Toolbar, Typography } from '@mui/material'
 import LogoIcon from '../LogoIcon'
 

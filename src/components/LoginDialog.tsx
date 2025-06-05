@@ -35,15 +35,15 @@ const LoginDialog: React.FC<LoginProps> = ({ open, toggleLogin }) => {
       <DialogTitle>Login</DialogTitle>
       <DialogContent>
         <DialogContentText>
-          Please enter your email and password to log in.
+          Please enter your username and password to log in.
         </DialogContentText>
         <TextField
           autoFocus
           margin="dense"
-          id="email"
-          label="Email"
-          placeholder="your@email.com"
-          type="email"
+          id="username"
+          label="username"
+          placeholder="username"
+          type="username"
           fullWidth
           variant="outlined"
         />
@@ -56,10 +56,10 @@ const LoginDialog: React.FC<LoginProps> = ({ open, toggleLogin }) => {
           fullWidth
           variant="outlined"
         />
-        <Box display="flex" alignItems="center" justifyContent="space-between" mt={1}>
+        {/* <Box display="flex" alignItems="center" justifyContent="space-between" mt={1}>
           <FormControlLabel control={<Checkbox />} label="Remember me" />
-          {/* <Link href="#" variant="body2">Forgot password?</Link> */}
-        </Box>
+          <Link href="#" variant="body2">Forgot password?</Link>
+        </Box> */}
         <Button fullWidth variant="contained" sx={{ mt: 2 }} onClick={toggleLogin}>
           Sign In
         </Button>
