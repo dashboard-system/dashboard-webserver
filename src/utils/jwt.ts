@@ -17,14 +17,14 @@ const getJwtSecret = (): string => {
 // const JWT_SECRET = getJwtSecret();
 // const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || "7d";
 
-const JWT_SECRET: string = process.env.JWT_SECRET || "your-secret-key"; // Ensure this is a string
+const JWT_SECRET: string = getJwtSecret(); // Ensure this is a string
 const JWT_EXPIRES_IN: string = "1h"; // Example: '1h' for 1 hour, '7d' for 7 days, or a number for seconds
 
 export class JWTUtils {
   // Generate JWT token
   static generateToken(payload: {
     id: number;
-    email: string;
+    username: string;
     role: string;
   }): string {
     try {

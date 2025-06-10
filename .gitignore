@@ -1,5 +1,8 @@
 node_modules/
 dist/
+dashboard-ui/
+logs/
+db/
 .env
 *.log
 .DS_Store

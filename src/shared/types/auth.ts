@@ -1,13 +1,12 @@
-// src/types/auth.ts
+// src/types/auth.ts (Simplified without email)
 import { Request } from 'express';
 
 export interface User {
   id: number;
-  email: string;
-  name: string;
-  role: 'admin' | 'user';
-  createdAt?: string;
-  updatedAt?: string;
+  username: string;
+  role: 'engineer' | 'maintainer' | 'admin' | 'user';
+  created_at: string;
+  updated_at: string;
 }
 
 export interface UserWithPassword extends User {
@@ -16,8 +15,8 @@ export interface UserWithPassword extends User {
 
 export interface JwtPayload {
   id: number;
-  email: string;
-  role: 'admin' | 'user';
+  username: string;
+  role: 'engineer' | 'maintainer' | 'admin' | 'user';
   iat?: number;
   exp?: number;
 }
@@ -27,14 +26,26 @@ export interface AuthRequest extends Request {
 }
 
 export interface LoginRequest {
-  email: string;
+  username: string;
   password: string;
 }
 
 export interface RegisterRequest {
-  email: string;
+  username: string;
   password: string;
-  name: string;
+  role?: string;
+}
+
+export interface CreateUserData {
+  username: string;
+  password: string;
+  role?: string;
+}
+
+export interface UpdateUserData {
+  username?: string;
+  password?: string;
+  role?: string;
 }
 
 export interface AuthResponse {

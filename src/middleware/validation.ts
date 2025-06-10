@@ -5,18 +5,9 @@ import { Request, Response, NextFunction } from 'express';
 export const validateUser = (req: Request, res: Response, next: NextFunction): void => {
   const { name, email } = req.body;
   
-  if (!name || !email) {
+  if (!name ) {
     res.status(400).json({
-      error: 'Name and email are required'
-    });
-    return;
-  }
-  
-  // Basic email validation
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(email)) {
-    res.status(400).json({
-      error: 'Invalid email format'
+      error: 'Name is required'
     });
     return;
   }
@@ -34,11 +25,11 @@ export const validateUser = (req: Request, res: Response, next: NextFunction): v
 
 // Validate login data
 export const validateLogin = (req: Request, res: Response, next: NextFunction): void => {
-  const { email, password } = req.body;
+  const { username, password } = req.body;
   
-  if (!email || !password) {
+  if (!username || !password) {
     res.status(400).json({
-      error: 'Email and password are required'
+      error: 'Username and password are required'
     });
     return;
   }

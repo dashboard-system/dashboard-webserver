@@ -8,14 +8,14 @@ const router = Router();
 const userModel = new UserModel();
 
 // POST /api/auth/login
-router.post("/login", async (req: Request, res: Response): Promise<void> => {
+router.post('/login', async (req: Request, res: Response): Promise<void> => {
   try {
     const { username, password } = req.body;
 
     // Validation
     if (!username || !password) {
       res.status(400).json({
-        error: "Username and password are required",
+        error: 'Username and password are required'
       });
       return;
     }
@@ -24,7 +24,7 @@ router.post("/login", async (req: Request, res: Response): Promise<void> => {
     const user = await userModel.verifyPassword(username, password);
     if (!user) {
       res.status(401).json({
-        error: "Invalid credentials",
+        error: 'Invalid credentials'
       });
       return;
     }
@@ -32,46 +32,37 @@ router.post("/login", async (req: Request, res: Response): Promise<void> => {
     // Generate JWT token
     const token = JWTUtils.generateToken({
       id: user.id,
-      email: user.email,
-      role: user.role,
+      username: user.username,
+      role: user.role
     });
 
     res.json({
-      message: "Login successful",
+      message: 'Login successful',
       token,
       user: {
         id: user.id,
         username: user.username,
-        email: user.email,
-        role: user.role,
-      },
+        role: user.role
+      }
     });
+
   } catch (error) {
-    console.error("Login error:", error);
+    console.error('Login error:', error);
     res.status(500).json({
-      error: "Internal server error",
+      error: 'Internal server error'
     });
   }
 });
 
 // POST /api/auth/register
-router.post("/register", async (req: Request, res: Response): Promise<void> => {
+router.post('/register', async (req: Request, res: Response): Promise<void> => {
   try {
-    const { username, email, password, role = "user" } = req.body;
+    const { username, password, role = 'user' } = req.body;
 
     // Validation
-    if (!username || !email || !password) {
+    if (!username || !password) {
       res.status(400).json({
-        error: "Username, email, and password are required",
-      });
-      return;
-    }
-
-    // Email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      res.status(400).json({
-        error: "Invalid email format",
+        error: 'Username and password are required'
       });
       return;
     }
@@ -79,7 +70,7 @@ router.post("/register", async (req: Request, res: Response): Promise<void> => {
     // Username validation
     if (username.length < 3) {
       res.status(400).json({
-        error: "Username must be at least 3 characters long",
+        error: 'Username must be at least 3 characters long'
       });
       return;
     }
@@ -87,16 +78,16 @@ router.post("/register", async (req: Request, res: Response): Promise<void> => {
     // Password validation
     if (password.length < 6) {
       res.status(400).json({
-        error: "Password must be at least 6 characters long",
+        error: 'Password must be at least 6 characters long'
       });
       return;
     }
 
     // Role validation
-    const validRoles = ["user", "engineer", "maintainer", "admin"];
+    const validRoles = ['user', 'engineer', 'maintainer', 'admin'];
     if (!validRoles.includes(role)) {
       res.status(400).json({
-        error: "Invalid role specified",
+        error: 'Invalid role specified'
       });
       return;
     }
@@ -104,221 +95,194 @@ router.post("/register", async (req: Request, res: Response): Promise<void> => {
     // Create user
     const newUser = await userModel.createUser({
       username,
-      email,
       password,
-      role,
+      role
     });
 
     // Generate token
     const token = JWTUtils.generateToken({
       id: newUser.id,
-      email: newUser.email,
-      role: newUser.role,
+      username: newUser.username,
+      role: newUser.role
     });
 
     res.status(201).json({
-      message: "User registered successfully",
+      message: 'User registered successfully',
       token,
       user: {
         id: newUser.id,
         username: newUser.username,
-        email: newUser.email,
-        role: newUser.role,
-      },
+        role: newUser.role
+      }
     });
-  } catch (error: any) {
-    console.error("Registration error:", error);
 
-    if (error.message === "Username or email already exists") {
+  } catch (error: any) {
+    console.error('Registration error:', error);
+    
+    if (error.message === 'Username already exists') {
       res.status(409).json({
-        error: error.message,
+        error: error.message
       });
       return;
     }
-
+    
     res.status(500).json({
-      error: "Internal server error",
+      error: 'Internal server error'
     });
   }
 });
 
 // GET /api/auth/me - Get current user profile
-router.get(
-  "/me",
-  authenticateToken,
-  (req: AuthRequest, res: Response): void => {
-    try {
-      if (!req.user) {
-        res.status(401).json({
-          error: "User not found in token",
-        });
-        return;
-      }
-
-      // Get full user data from database
-      const user = userModel.getUserById(req.user.id);
-      if (!user) {
-        res.status(404).json({
-          error: "User not found",
-        });
-        return;
-      }
-
-      res.json({
-        user: {
-          id: user.id,
-          username: user.username,
-          email: user.email,
-          role: user.role,
-          created_at: user.created_at,
-          updated_at: user.updated_at,
-        },
+router.get('/me', authenticateToken, (req: AuthRequest, res: Response): void => {
+  try {
+    if (!req.user) {
+      res.status(401).json({
+        error: 'User not found in token'
       });
-    } catch (error) {
-      console.error("Get profile error:", error);
-      res.status(500).json({
-        error: "Internal server error",
-      });
+      return;
     }
-  }
-);
 
-// POST /api/auth/refresh - Refresh token
-router.post(
-  "/refresh",
-  authenticateToken,
-  (req: AuthRequest, res: Response): void => {
-    try {
-      if (!req.user) {
-        res.status(401).json({
-          error: "Invalid token",
-        });
-        return;
-      }
-
-      // Verify user still exists in database
-      const user = userModel.getUserById(req.user.id);
-      if (!user) {
-        res.status(404).json({
-          error: "User no longer exists",
-        });
-        return;
-      }
-
-      // Generate new token
-      const newToken = JWTUtils.generateToken({
-        id: user.id,
-        email: user.email,
-        role: user.role,
+    // Get full user data from database
+    const user = userModel.getUserById(req.user.id);
+    if (!user) {
+      res.status(404).json({
+        error: 'User not found'
       });
-
-      res.json({
-        message: "Token refreshed successfully",
-        token: newToken,
-      });
-    } catch (error) {
-      console.error("Token refresh error:", error);
-      res.status(500).json({
-        error: "Internal server error",
-      });
+      return;
     }
-  }
-);
 
-// PUT /api/auth/profile - Update own profile
-router.put(
-  "/profile",
-  authenticateToken,
-  async (req: AuthRequest, res: Response): Promise<void> => {
-    try {
-      if (!req.user) {
-        res.status(401).json({
-          error: "User not found in token",
-        });
-        return;
-      }
-
-      const { username, email, password } = req.body;
-      const updateData: any = {};
-
-      if (username) {
-        if (username.length < 3) {
-          res.status(400).json({
-            error: "Username must be at least 3 characters long",
-          });
-          return;
-        }
-        updateData.username = username;
-      }
-
-      if (email) {
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(email)) {
-          res.status(400).json({
-            error: "Invalid email format",
-          });
-          return;
-        }
-        updateData.email = email;
-      }
-
-      if (password) {
-        if (password.length < 6) {
-          res.status(400).json({
-            error: "Password must be at least 6 characters long",
-          });
-          return;
-        }
-        updateData.password = password;
-      }
-
-      // Update user
-      const updatedUser = await userModel.updateUser(req.user.id, updateData);
-      if (!updatedUser) {
-        res.status(404).json({
-          error: "User not found",
-        });
-        return;
-      }
-
-      res.json({
-        message: "Profile updated successfully",
-        user: {
-          id: updatedUser.id,
-          username: updatedUser.username,
-          email: updatedUser.email,
-          role: updatedUser.role,
-          updated_at: updatedUser.updated_at,
-        },
-      });
-    } catch (error: any) {
-      console.error("Profile update error:", error);
-
-      if (error.message === "Username or email already exists") {
-        res.status(409).json({
-          error: error.message,
-        });
-        return;
-      }
-
-      res.status(500).json({
-        error: "Internal server error",
-      });
-    }
-  }
-);
-
-// POST /api/auth/logout
-router.post(
-  "/logout",
-  authenticateToken,
-  (req: AuthRequest, res: Response): void => {
-    // In a real app with Redis, you might want to blacklist the token
-    // For now, just return success
     res.json({
-      message: "Logout successful",
+      user: {
+        id: user.id,
+        username: user.username,
+        role: user.role,
+        created_at: user.created_at,
+        updated_at: user.updated_at
+      }
+    });
+
+  } catch (error) {
+    console.error('Get profile error:', error);
+    res.status(500).json({
+      error: 'Internal server error'
     });
   }
-);
+});
+
+// POST /api/auth/refresh - Refresh token
+router.post('/refresh', authenticateToken, (req: AuthRequest, res: Response): void => {
+  try {
+    if (!req.user) {
+      res.status(401).json({
+        error: 'Invalid token'
+      });
+      return;
+    }
+
+    // Verify user still exists in database
+    const user = userModel.getUserById(req.user.id);
+    if (!user) {
+      res.status(404).json({
+        error: 'User no longer exists'
+      });
+      return;
+    }
+
+    // Generate new token
+    const newToken = JWTUtils.generateToken({
+      id: user.id,
+      username: user.username,
+      role: user.role
+    });
+
+    res.json({
+      message: 'Token refreshed successfully',
+      token: newToken
+    });
+
+  } catch (error) {
+    console.error('Token refresh error:', error);
+    res.status(500).json({
+      error: 'Internal server error'
+    });
+  }
+});
+
+// PUT /api/auth/profile - Update own profile
+router.put('/profile', authenticateToken, async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    if (!req.user) {
+      res.status(401).json({
+        error: 'User not found in token'
+      });
+      return;
+    }
+
+    const { username, password } = req.body;
+    const updateData: any = {};
+
+    if (username) {
+      if (username.length < 3) {
+        res.status(400).json({
+          error: 'Username must be at least 3 characters long'
+        });
+        return;
+      }
+      updateData.username = username;
+    }
+
+    if (password) {
+      if (password.length < 6) {
+        res.status(400).json({
+          error: 'Password must be at least 6 characters long'
+        });
+        return;
+      }
+      updateData.password = password;
+    }
+
+    // Update user
+    const updatedUser = await userModel.updateUser(req.user.id, updateData);
+    if (!updatedUser) {
+      res.status(404).json({
+        error: 'User not found'
+      });
+      return;
+    }
+
+    res.json({
+      message: 'Profile updated successfully',
+      user: {
+        id: updatedUser.id,
+        username: updatedUser.username,
+        role: updatedUser.role,
+        updated_at: updatedUser.updated_at
+      }
+    });
+
+  } catch (error: any) {
+    console.error('Profile update error:', error);
+    
+    if (error.message === 'Username already exists') {
+      res.status(409).json({
+        error: error.message
+      });
+      return;
+    }
+    
+    res.status(500).json({
+      error: 'Internal server error'
+    });
+  }
+});
+
+// POST /api/auth/logout
+router.post('/logout', authenticateToken, (req: AuthRequest, res: Response): void => {
+  // In a real app with Redis, you might want to blacklist the token
+  // For now, just return success
+  res.json({
+    message: 'Logout successful'
+  });
+});
 
 export default router;
