@@ -139,9 +139,9 @@ EOF
     print_success "Project initialization complete!"
     echo ""
     echo -e "${BLUE}Next steps:${NC}"
-    echo "1. Run: ${GREEN}./script/auth.sh${NC} to create default users"
-    echo "2. Run: ${GREEN}npm run dev${NC} to start the development server"
-    echo "3. Visit: ${GREEN}http://localhost:3000/health${NC} to check server status"
+    echo -e "1. Run: ${GREEN}./script/auth.sh${NC} to create default users"
+    echo -e "2. Run: ${GREEN}npm run dev${NC} to start the development server"
+    echo -e "3. Visit: ${GREEN}http://localhost:3000/health${NC} to check server status"
 }
 
 reset_project() {
@@ -206,7 +206,7 @@ check_requirements() {
         print_success "better-sqlite3 dependency found"
     else
         print_warning "better-sqlite3 not found in package.json"
-        echo "Run: npm install better-sqlite3 bcryptjs jsonwebtoken"
+        echo -e "Run: ${GREEN}npm install better-sqlite3 bcryptjs jsonwebtoken${NC}"
     fi
     
     # Check if bcryptjs is installed
@@ -214,7 +214,7 @@ check_requirements() {
         print_success "bcryptjs dependency found"
     else
         print_warning "bcryptjs not found in package.json"
-        echo "Run: npm install bcryptjs"
+        echo -e "Run: ${GREEN}npm install bcryptjs${NC}"
     fi
     
     print_success "Requirements check complete!"
@@ -266,35 +266,35 @@ show_status() {
     
     echo ""
     echo -e "${BLUE}Available commands:${NC}"
-    echo "  ./script/init.sh init      - Initialize project"
-    echo "  ./script/init.sh reset     - Reset project (removes all data)"
-    echo "  ./script/init.sh check     - Check system requirements"
-    echo "  ./script/init.sh status    - Show project status"
-    echo "  ./script/auth.sh init      - Create default users"
-    echo "  ./script/auth.sh list      - List all users"
+    echo -e "  ${GREEN}./script/init.sh init${NC}      - Initialize project"
+    echo -e "  ${GREEN}./script/init.sh reset${NC}     - Reset project (removes all data)"
+    echo -e "  ${GREEN}./script/init.sh check${NC}     - Check system requirements"
+    echo -e "  ${GREEN}./script/init.sh status${NC}    - Show project status"
+    echo -e "  ${GREEN}./script/auth.sh init${NC}      - Create default users"
+    echo -e "  ${GREEN}./script/auth.sh list${NC}      - List all users"
 }
 
 show_help() {
-    echo "Usage: $0 [OPTION]"
+    echo -e "Usage: ${GREEN}$0 [OPTION]${NC}"
     echo "Initialize or manage the dashboard webserver project"
     echo ""
     echo "Options:"
-    echo "  init     Initialize the project (default)"
-    echo "  reset    Reset the project (removes all data)"
-    echo "  check    Check system requirements"
-    echo "  status   Show project status"
-    echo "  help     Show this help message"
+    echo -e "  ${GREEN}init${NC}     Initialize the project (default)"
+    echo -e "  ${GREEN}reset${NC}    Reset the project (removes all data)"
+    echo -e "  ${GREEN}check${NC}    Check system requirements"
+    echo -e "  ${GREEN}status${NC}   Show project status"
+    echo -e "  ${GREEN}help${NC}     Show this help message"
     echo ""
     echo "Examples:"
-    echo "  $0              # Initialize project"
-    echo "  $0 init         # Initialize project"
-    echo "  $0 reset        # Reset project with confirmation"
-    echo "  $0 check        # Check Node.js, npm, and dependencies"
-    echo "  $0 status       # Show current project status"
+    echo -e "  ${GREEN}$0${NC}              # Initialize project"
+    echo -e "  ${GREEN}$0 init${NC}         # Initialize project"
+    echo -e "  ${GREEN}$0 reset${NC}        # Reset project with confirmation"
+    echo -e "  ${GREEN}$0 check${NC}        # Check Node.js, npm, and dependencies"
+    echo -e "  ${GREEN}$0 status${NC}       # Show current project status"
     echo ""
     echo "After initialization:"
-    echo "  ./script/auth.sh init    # Create default users"
-    echo "  npm run dev              # Start development server"
+    echo -e "  ${GREEN}./script/auth.sh init${NC}    # Create default users"
+    echo -e "  ${GREEN}npm run dev${NC}              # Start development server"
 }
 
 # Main script logic
