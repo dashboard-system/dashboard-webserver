@@ -1,7 +1,7 @@
 // src/routes/health.ts
-import { Router, Request, Response } from 'express';
+import { Router, Request, Response } from 'express'
 
-const router = Router();
+const router = Router()
 
 // Health check endpoint
 router.get('/', (req: Request, res: Response) => {
@@ -9,9 +9,9 @@ router.get('/', (req: Request, res: Response) => {
     status: 'OK',
     timestamp: new Date().toISOString(),
     uptime: process.uptime(),
-    version: process.env.npm_package_version || '1.0.0'
-  });
-});
+    version: process.env.npm_package_version || '1.0.0',
+  })
+})
 
 // Detailed health check
 router.get('/detailed', (req: Request, res: Response) => {
@@ -21,8 +21,8 @@ router.get('/detailed', (req: Request, res: Response) => {
     uptime: process.uptime(),
     memory: process.memoryUsage(),
     environment: process.env.NODE_ENV || 'development',
-    nodeVersion: process.version
-  });
-});
+    nodeVersion: process.version,
+  })
+})
 
-export default router;
+export default router

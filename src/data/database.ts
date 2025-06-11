@@ -1,40 +1,40 @@
-import Database from 'better-sqlite3';
-import path from 'path';
-import fs from 'fs';
+import Database from 'better-sqlite3'
+import path from 'path'
+import fs from 'fs'
 
-const DB_PATH = process.env.DATABASE_PATH || './db/sqlite.db';
+const DB_PATH = process.env.DATABASE_PATH || './db/sqlite.db'
 
 // Type for health check result
 interface HealthCheckResult {
-  health: number;
+  health: number
 }
 
 class DatabaseManager {
-  private static instance: DatabaseManager;
-  private db: Database.Database;
+  private static instance: DatabaseManager
+  private db: Database.Database
 
   private constructor() {
     // Ensure database directory exists
-    const dbDir = path.dirname(DB_PATH);
+    const dbDir = path.dirname(DB_PATH)
     if (!fs.existsSync(dbDir)) {
-      fs.mkdirSync(dbDir, { recursive: true });
+      fs.mkdirSync(dbDir, { recursive: true })
     }
 
     // Initialize database connection
-    this.db = new Database(DB_PATH);
-    this.db.pragma('journal_mode = WAL'); // Enable WAL mode for better performance
-    this.db.pragma('foreign_keys = ON'); // Enable foreign key constraints
-    
-    this.initializeSchema();
-    
-    console.log(`📀 Database connected: ${DB_PATH}`);
+    this.db = new Database(DB_PATH)
+    this.db.pragma('journal_mode = WAL') // Enable WAL mode for better performance
+    this.db.pragma('foreign_keys = ON') // Enable foreign key constraints
+
+    this.initializeSchema()
+
+    console.log(`📀 Database connected: ${DB_PATH}`)
   }
 
   public static getInstance(): DatabaseManager {
     if (!DatabaseManager.instance) {
-      DatabaseManager.instance = new DatabaseManager();
+      DatabaseManager.instance = new DatabaseManager()
     }
-    return DatabaseManager.instance;
+    return DatabaseManager.instance
   }
 
   private initializeSchema(): void {
@@ -58,55 +58,55 @@ class DatabaseManager {
         BEGIN
           UPDATE users SET updated_at = datetime('now') WHERE id = NEW.id;
         END;
-      `);
-      
-      console.log('✅ Database schema initialized');
+      `)
+
+      console.log('✅ Database schema initialized')
     } catch (error) {
-      console.error('❌ Database schema initialization failed:', error);
-      throw error;
+      console.error('❌ Database schema initialization failed:', error)
+      throw error
     }
   }
 
   public getDatabase(): Database.Database {
-    return this.db;
+    return this.db
   }
 
   public close(): void {
     if (this.db) {
-      this.db.close();
-      console.log('📀 Database connection closed');
+      this.db.close()
+      console.log('📀 Database connection closed')
     }
   }
 
   // Health check method
   public isHealthy(): boolean {
     try {
-      const stmt = this.db.prepare('SELECT 1 as health');
-      const result = stmt.get() as HealthCheckResult | undefined;
-      return result?.health === 1;
+      const stmt = this.db.prepare('SELECT 1 as health')
+      const result = stmt.get() as HealthCheckResult | undefined
+      return result?.health === 1
     } catch (error) {
-      console.error('Database health check failed:', error);
-      return false;
+      console.error('Database health check failed:', error)
+      return false
     }
   }
 
   // Get database info
   public getInfo(): { path: string; size: number; isHealthy: boolean } {
     try {
-      const stats = fs.statSync(DB_PATH);
+      const stats = fs.statSync(DB_PATH)
       return {
         path: DB_PATH,
         size: stats.size,
-        isHealthy: this.isHealthy()
-      };
+        isHealthy: this.isHealthy(),
+      }
     } catch (error) {
       return {
         path: DB_PATH,
         size: 0,
-        isHealthy: false
-      };
+        isHealthy: false,
+      }
     }
   }
 }
 
-export default DatabaseManager;
+export default DatabaseManager

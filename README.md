@@ -64,22 +64,22 @@ The server will start on `http://localhost:3000`
 
 ### Users Table
 
-| Column | Type | Description |
-|--------|------|-------------|
-| `id` | INTEGER PRIMARY KEY | Auto-incrementing user ID |
-| `username` | TEXT UNIQUE | Username for login (engineer, maintainer) |
-| `password` | TEXT | bcrypt-hashed password (12 salt rounds) |
-| `role` | TEXT | User role (engineer, maintainer, admin, user) |
-| `created_at` | DATETIME | Account creation timestamp |
-| `updated_at` | DATETIME | Last update timestamp |
+| Column       | Type                | Description                                   |
+| ------------ | ------------------- | --------------------------------------------- |
+| `id`         | INTEGER PRIMARY KEY | Auto-incrementing user ID                     |
+| `username`   | TEXT UNIQUE         | Username for login (engineer, maintainer)     |
+| `password`   | TEXT                | bcrypt-hashed password (12 salt rounds)       |
+| `role`       | TEXT                | User role (engineer, maintainer, admin, user) |
+| `created_at` | DATETIME            | Account creation timestamp                    |
+| `updated_at` | DATETIME            | Last update timestamp                         |
 
 ## 🔑 Default Users
 
 After running the initialization scripts, two default users are created:
 
-| Username | Password | Role |
-|----------|----------|------|
-| `engineer` | `engineerpassword` | engineer |
+| Username     | Password             | Role       |
+| ------------ | -------------------- | ---------- |
+| `engineer`   | `engineerpassword`   | engineer   |
 | `maintainer` | `maintainerpassword` | maintainer |
 
 > **Security Note**: Change these default passwords in production!
@@ -88,33 +88,33 @@ After running the initialization scripts, two default users are created:
 
 ### Authentication
 
-| Method | Endpoint | Description | Auth Required |
-|--------|----------|-------------|---------------|
-| `POST` | `/api/auth/login` | User login | ❌ |
-| `POST` | `/api/auth/register` | User registration | ❌ |
-| `GET` | `/api/auth/me` | Get current user profile | ✅ |
-| `PUT` | `/api/auth/profile` | Update own profile | ✅ |
-| `POST` | `/api/auth/refresh` | Refresh JWT token | ✅ |
-| `POST` | `/api/auth/logout` | User logout | ✅ |
+| Method | Endpoint             | Description              | Auth Required |
+| ------ | -------------------- | ------------------------ | ------------- |
+| `POST` | `/api/auth/login`    | User login               | ❌            |
+| `POST` | `/api/auth/register` | User registration        | ❌            |
+| `GET`  | `/api/auth/me`       | Get current user profile | ✅            |
+| `PUT`  | `/api/auth/profile`  | Update own profile       | ✅            |
+| `POST` | `/api/auth/refresh`  | Refresh JWT token        | ✅            |
+| `POST` | `/api/auth/logout`   | User logout              | ✅            |
 
 ### User Management
 
-| Method | Endpoint | Description | Auth Required | Role Required |
-|--------|----------|-------------|---------------|---------------|
-| `GET` | `/api/users` | List users (paginated) | ✅ | admin |
-| `GET` | `/api/users/:id` | Get user by ID | ✅ | admin |
-| `POST` | `/api/users` | Create new user | ✅ | admin |
-| `PUT` | `/api/users/:id` | Update user | ✅ | admin |
-| `DELETE` | `/api/users/:id` | Delete user | ✅ | admin |
-| `GET` | `/api/users/profile` | Get own profile | ✅ | any |
+| Method   | Endpoint             | Description            | Auth Required | Role Required |
+| -------- | -------------------- | ---------------------- | ------------- | ------------- |
+| `GET`    | `/api/users`         | List users (paginated) | ✅            | admin         |
+| `GET`    | `/api/users/:id`     | Get user by ID         | ✅            | admin         |
+| `POST`   | `/api/users`         | Create new user        | ✅            | admin         |
+| `PUT`    | `/api/users/:id`     | Update user            | ✅            | admin         |
+| `DELETE` | `/api/users/:id`     | Delete user            | ✅            | admin         |
+| `GET`    | `/api/users/profile` | Get own profile        | ✅            | any           |
 
 ### Health Checks
 
-| Method | Endpoint | Description | Auth Required |
-|--------|----------|-------------|---------------|
-| `GET` | `/health` | Basic health check | ❌ |
-| `GET` | `/health/detailed` | Detailed system info | ❌ |
-| `GET` | `/health/database` | Database health check | ❌ |
+| Method | Endpoint           | Description           | Auth Required |
+| ------ | ------------------ | --------------------- | ------------- |
+| `GET`  | `/health`          | Basic health check    | ❌            |
+| `GET`  | `/health/detailed` | Detailed system info  | ❌            |
+| `GET`  | `/health/database` | Database health check | ❌            |
 
 ## 🔧 Configuration
 
@@ -316,6 +316,7 @@ This webserver is designed to work seamlessly with the [Coffee-Dog Dashboard UI]
 ### Common Issues
 
 **Database Connection Issues**
+
 ```bash
 # Check database health
 curl http://localhost:3000/health/database
@@ -325,6 +326,7 @@ curl http://localhost:3000/health/database
 ```
 
 **Authentication Issues**
+
 ```bash
 # Verify JWT token
 curl -X POST http://localhost:3000/api/auth/verify \
@@ -333,6 +335,7 @@ curl -X POST http://localhost:3000/api/auth/verify \
 ```
 
 **Permission Issues**
+
 ```bash
 # Make scripts executable
 chmod +x ./script/*.sh
