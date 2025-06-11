@@ -52,10 +52,15 @@ app.all('/*splat', (req: Request, res: Response) => {
 })
 
 // Start server
-app.listen(PORT, HOST, () => {
+const server = app.listen(PORT, HOST, () => {
   console.log(`🚀 Server running on http://${HOST}:${PORT}`)
   console.log(`📊 Health check: http://${HOST}:${PORT}/health`)
   console.log(`🔧 Environment: ${process.env.NODE_ENV || 'development'}`)
+})
+
+server.on('error', (error) => {
+  console.error('Server error:', error)
+  process.exit(1)
 })
 
 // Graceful shutdown
