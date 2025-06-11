@@ -3,6 +3,8 @@ dist/
 dashboard-ui/
 logs/
 db/
+db/sqlite.db
 .env
 *.log
 .DS_Store
+backup/
