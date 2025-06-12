@@ -1,4 +1,4 @@
-import { BrowserRouter, Route, Routes } from 'react-router'
+import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import './App.css'
 import SideBar from './components/sidebar/SideBar'
 import TopPane from './components/toppane/TopPane'
