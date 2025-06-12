@@ -7,13 +7,13 @@ function FormInput({ element }: { element: FormElementItem }) {
   const dispatch = useAppDispatch()
   const state = useAppSelector((state) => state)
   const handleOnChangeInput = (event: any, element: any) => {
-    console.log(element.key);
-    console.log(event.target.value);
-    
+    console.log(element.key)
+    console.log(event.target.value)
+
     switch (element.key) {
       case 'greetings':
-        console.log(123);
-        
+        console.log(123)
+
         dispatch(setGettings(event.target.value))
         break
 
@@ -22,15 +22,29 @@ function FormInput({ element }: { element: FormElementItem }) {
     }
   }
   const valueRender = (source: string) => {
-    const [slice, type, key] = source.split('/')
-    let value: string
-    console.log(source);
-    console.log(slice);
-    
-    if (!slice) throw new Error("Can't find the Redux State")
-    if (key) value = state[slice][type][key]
-    else value = state[slice][type]
-    return value
+    if (!source) {
+      return ''
+    }
+    const parts = source.split('/')
+    let currentValue: any = state
+    for (const part of parts) {
+      if (
+        currentValue &&
+        typeof currentValue === 'object' &&
+        part in currentValue
+      ) {
+        // safe get into
+        currentValue = currentValue[part]
+      } else {
+        console.error(`Error: Invalid path "${source}" at part "${part}"`)
+        return ''
+      }
+    }
+    if (typeof currentValue === 'object') {
+      return ''
+    }
+
+    return currentValue
   }
 
   const formRender = (element: FormElementItem) => {
