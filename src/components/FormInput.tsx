@@ -2,6 +2,7 @@ import { Grid, TextField, Typography } from '@mui/material'
 import type { FormElementItem } from '../libs/constants/components_interface'
 import { useAppDispatch, useAppSelector } from '../store/hook'
 import { setGettings } from '../store/slices/global/global-slice'
+import { getValueByPath } from '../utils/util'
 
 function FormInput({ element }: { element: FormElementItem }) {
   const dispatch = useAppDispatch()
@@ -21,30 +22,18 @@ function FormInput({ element }: { element: FormElementItem }) {
         break
     }
   }
-  const valueRender = (source: string) => {
-    if (!source) {
-      return ''
-    }
-    const parts = source.split('/')
-    let currentValue: any = state
-    for (const part of parts) {
-      if (
-        currentValue &&
-        typeof currentValue === 'object' &&
-        part in currentValue
-      ) {
-        // safe get into
-        currentValue = currentValue[part]
-      } else {
-        console.error(`Error: Invalid path "${source}" at part "${part}"`)
-        return ''
-      }
-    }
-    if (typeof currentValue === 'object') {
-      return ''
-    }
+  const rawValue = getValueByPath(state, element.source)
+  let displayValue: string | number
 
-    return currentValue
+  if (rawValue === undefined || rawValue === null) {
+    displayValue = ''
+  } else if (typeof rawValue === 'object') {
+    displayValue = ''
+  } else if (typeof rawValue === 'string' || typeof rawValue === 'number') {
+    displayValue = rawValue
+  } else {
+    // for safety if datatype is boolean
+    displayValue = ''
   }
 
   const formRender = (element: FormElementItem) => {
@@ -56,7 +45,7 @@ function FormInput({ element }: { element: FormElementItem }) {
             label={element.label}
             fullWidth
             margin="normal"
-            value={valueRender(element.source)}
+            value={displayValue}
             sx={{ maxWidth: '400px' }}
             onChange={(ev) => handleOnChangeInput(ev, element)}
           />
