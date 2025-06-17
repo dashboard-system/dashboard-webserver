@@ -26,7 +26,7 @@ function Brand() {
         color="info"
         sx={style.text}
       >
-        aws test should be working
+        Cabin
       </Typography>
     </Toolbar>
   )
