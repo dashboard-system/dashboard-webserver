@@ -26,7 +26,7 @@ function Brand() {
         color="info"
         sx={style.text}
       >
-        haorong
+        aws test should be working
       </Typography>
     </Toolbar>
   )
