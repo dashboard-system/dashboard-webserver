@@ -1,7 +1,11 @@
-#!/binin/bash
+#!/bin/bash
 set -e
 
-# Stop and delete the old app version from PM2
-# The '|| true' ensures the script doesn't fail if the app isn't running
+# --- FIX: Add these lines to load NVM ---
+export NVM_DIR="/home/ec2-user/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+# --- End of FIX ---
+
+# The rest of the script remains the same
 pm2 stop app || true
 pm2 delete app || true

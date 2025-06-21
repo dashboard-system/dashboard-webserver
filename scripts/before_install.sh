@@ -1,10 +1,14 @@
 #!/bin/bash
-set -e # Exit immediately if a command exits with a non-zero status.
+set -e
 
-# Define the app directory
+# --- FIX: Add these lines to load NVM ---
+export NVM_DIR="/home/ec2-user/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+# --- End of FIX ---
+
+# The rest of the script remains the same
 APP_DIR="/home/ec2-user/app"
 
-# Create the app directory if it doesn't exist
 if [ ! -d "$APP_DIR" ]; then
     mkdir -p "$APP_DIR"
 fi
