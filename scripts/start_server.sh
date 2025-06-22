@@ -1,15 +1,11 @@
 #!/bin/bash
 set -e
 
-# --- FIX: Add these lines to load NVM ---
-export NVM_DIR="/home/ec2-user/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-# --- End of FIX ---
-
-# The rest of the script remains the same
 cd /home/ec2-user/app
 
-npm install --omit=dev
+# Use the absolute path to npm to install dependencies
+/home/ec2-user/.nvm/versions/node/v20.19.2/bin/npm install --omit=dev
 
-# IMPORTANT: Change 'dist/index.js' if your server entry point is different
-pm2 start dist/index.js --name app
+# Use the absolute path to pm2 to start the application
+# Remember to change 'dist/index.js' if your main file is different
+/home/ec2-user/.nvm/versions/node/v20.19.2/bin/pm2 start dist/index.js --name app
