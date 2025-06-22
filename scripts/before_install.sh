@@ -1,15 +1,26 @@
 #!/bin/bash
-set -e
 
-# Define the application directory
+set -ex
+
 APP_DIR="/home/ec2-user/app"
 
-# If the application directory exists from a previous deployment, remove it and all its contents
+echo "--- BeforeInstall script started ---"
+echo "Running as user: $(whoami)"
+echo "Attempting to clean directory: ${APP_DIR}"
+
 if [ -d "$APP_DIR" ]; then
-    echo "Removing existing application directory: ${APP_DIR}"
-    rm -rf "${APP_DIR}"
+    echo "Directory ${APP_DIR} exists. Forcibly removing it with root privileges..."
+   
+    sudo rm -rfv "${APP_DIR}"
+    echo "Directory removal command finished."
+else
+    echo "Directory ${APP_DIR} does not exist. No need to remove."
 fi
 
-# Create a fresh, empty application directory for the new deployment
-echo "Creating fresh application directory: ${APP_DIR}"
+echo "Creating a fresh, empty application directory..."
 mkdir -p "${APP_DIR}"
+
+chown ec2-user:ec2-user "${APP_DIR}"
+echo "Directory creation finished."
+
+echo "--- BeforeInstall script completed successfully ---"
