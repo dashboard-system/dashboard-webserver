@@ -1,14 +1,15 @@
 #!/bin/bash
 set -e
 
-# --- FIX: Add these lines to load NVM ---
-export NVM_DIR="/home/ec2-user/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-# --- End of FIX ---
-
-# The rest of the script remains the same
+# Define the application directory
 APP_DIR="/home/ec2-user/app"
 
-if [ ! -d "$APP_DIR" ]; then
-    mkdir -p "$APP_DIR"
+# If the application directory exists from a previous deployment, remove it and all its contents
+if [ -d "$APP_DIR" ]; then
+    echo "Removing existing application directory: ${APP_DIR}"
+    rm -rf "${APP_DIR}"
 fi
+
+# Create a fresh, empty application directory for the new deployment
+echo "Creating fresh application directory: ${APP_DIR}"
+mkdir -p "${APP_DIR}"
