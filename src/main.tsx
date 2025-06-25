@@ -1,5 +1,6 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
+import { SnackbarProvider } from 'notistack'
 import './index.css'
 import App from './App.tsx'
 import { Provider } from 'react-redux'
@@ -10,13 +11,15 @@ import { PageContextProvider } from './components/context/PageContext.tsx'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <ThemeProvider theme={theme} defaultMode="light">
-      <Provider store={store}>
-        <PageContextProvider>
-          <CssBaseline />
-          <App />
-        </PageContextProvider>
-      </Provider>
-    </ThemeProvider>
+    <SnackbarProvider>
+      <ThemeProvider theme={theme} defaultMode="light">
+        <Provider store={store}>
+          <PageContextProvider>
+            <CssBaseline />
+            <App />
+          </PageContextProvider>
+        </Provider>
+      </ThemeProvider>
+    </SnackbarProvider>
   </StrictMode>,
 )

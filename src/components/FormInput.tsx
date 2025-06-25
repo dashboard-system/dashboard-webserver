@@ -13,11 +13,8 @@ function FormInput({ element }: { element: FormElementItem }) {
 
     switch (element.key) {
       case 'greetings':
-        console.log(123)
-
         dispatch(setGettings(event.target.value))
         break
-
       default:
         break
     }

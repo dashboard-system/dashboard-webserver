@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react'
 import {
   Button,
   TextField,
@@ -8,130 +8,198 @@ import {
   DialogTitle,
   useMediaQuery,
   useTheme,
-  Checkbox,
-  FormControlLabel,
   Link,
-  Divider,
-  Typography,
-  Box
-} from '@mui/material';
-import GitHubIcon from '@mui/icons-material/GitHub';
+  Box,
+  Alert,
+} from '@mui/material'
+import { fetchPost } from '../utils/fetch'
+import { successMessage } from '../utils/message'
+import { useAppDispatch } from '../store/hook'
+import { setIsLogin } from '../store/slices/global/global-slice'
+
+// Import validation functions
+import {
+  validateLoginForm,
+  validateLoginField,
+  prepareLoginData,
+  type LoginFormData,
+  type FormValidationErrors
+} from '../utils/validation'
 
 interface LoginProps {
-  open: boolean;
-  toggleLogin: () => void;
+  open: boolean
+  toggleLogin: () => void
 }
 
 const LoginDialog: React.FC<LoginProps> = ({ open, toggleLogin }) => {
-  const theme = useTheme();
-  const fullScreen = useMediaQuery(theme.breakpoints.down('sm'));
+  const theme = useTheme()
+  const fullScreen = useMediaQuery(theme.breakpoints.down('sm'))
+  const dispatch = useAppDispatch()
+  const [loginForm, setLoginForm] = useState<LoginFormData>({
+    username: '',
+    password: '',
+  })
+  const [error, setError] = useState<string>('') // General error state
+  const [validationErrors, setValidationErrors] = useState<FormValidationErrors>({}) // Field-specific errors
+  const [isLoading, setIsLoading] = useState(false)
+
+  const handleOnChangeFormInput = (ev: React.ChangeEvent<HTMLInputElement>) => {
+    const { value, id } = ev.target
+    setError('') // Clear general error when user starts typing
+    
+    // Real-time field validation
+    const fieldValidation = validateLoginField(id as keyof LoginFormData, value)
+    
+    // Update field-specific validation errors
+    setValidationErrors(prev => ({
+      ...prev,
+      [id]: fieldValidation.isValid ? undefined : fieldValidation.error
+    }))
+    
+    setLoginForm((obj) => ({ ...obj, [id]: value }))
+  }
+
+  const onClickLoginHandler = async (
+    ev: React.MouseEvent<HTMLButtonElement>,
+  ) => {
+    ev.preventDefault()
+    setError('') // Clear previous errors
+    
+    // Validate entire form before submission
+    const validation = validateLoginForm(loginForm)
+    
+    if (!validation.isValid) {
+      setValidationErrors(validation.errors as FormValidationErrors)
+      return // Stop submission if validation fails
+    }
+    
+    setIsLoading(true)
+
+    try {
+      // Prepare and sanitize data for submission
+      const preparedData = prepareLoginData(loginForm)
+      
+      const resp = await fetchPost({ url: '/api/auth/login', data: preparedData })
+      const result = await resp.json()
+
+      if (result.error) {
+        throw new Error(result.error)
+      }
+
+      // Success - handle login
+      successMessage('Login Success!')
+      dispatch(setIsLogin(true))
+      
+      // Reset form on success
+      setLoginForm({ username: '', password: '' })
+      setValidationErrors({})
+      
+      toggleLogin() // Close dialog on success
+    } catch (error) {
+      console.error('Login Request:', error)
+      // Set user-friendly error message
+      setError(
+        error instanceof Error
+          ? error.message
+          : 'Login failed. Please check your credentials and try again.',
+      )
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  // Handle Enter key press for better UX
+  const handleKeyPress = (ev: React.KeyboardEvent) => {
+    if (ev.key === 'Enter' && !isLoading && isFormValid()) {
+      onClickLoginHandler(ev as any)
+    }
+  }
+
+  // Check if form is valid for button state
+  const isFormValid = () => {
+    const hasContent = loginForm.username.trim() && loginForm.password
+    const hasNoValidationErrors = Object.values(validationErrors).every(error => !error)
+    return hasContent && hasNoValidationErrors
+  }
+
+  // Reset form helper
+  const resetForm = () => {
+    setLoginForm({ username: '', password: '' })
+    setValidationErrors({})
+    setError('')
+  }
 
   return (
-    <Dialog
-      open={open}
-      onClose={toggleLogin}
-      fullScreen={fullScreen}
-    >
+    <Dialog open={open} onClose={toggleLogin} fullScreen={fullScreen}>
       <DialogTitle>Login</DialogTitle>
       <DialogContent>
         <DialogContentText>
           Please enter your username and password to log in.
         </DialogContentText>
+
+        {/* General Error Alert */}
+        {error && (
+          <Alert severity="error" sx={{ mt: 3 }}>
+            {error}
+          </Alert>
+        )}
+
         <TextField
           autoFocus
           margin="dense"
           id="username"
-          label="username"
-          placeholder="username"
-          type="username"
+          label="Username"
+          placeholder="Enter your username"
+          type="text"
           fullWidth
           variant="outlined"
+          value={loginForm.username}
+          onChange={handleOnChangeFormInput}
+          onKeyPress={handleKeyPress}
+          error={!!validationErrors.username} // Show error for this specific field
+          helperText={validationErrors.username} // Show field-specific error message
+          disabled={isLoading}
         />
         <TextField
           margin="dense"
           id="password"
           label="Password"
-          placeholder="******"
+          placeholder="Enter your password"
           type="password"
           fullWidth
           variant="outlined"
+          value={loginForm.password}
+          onChange={handleOnChangeFormInput}
+          onKeyPress={handleKeyPress}
+          error={!!validationErrors.password} // Show error for this specific field
+          helperText={validationErrors.password} // Show field-specific error message
+          disabled={isLoading}
         />
-        {/* <Box display="flex" alignItems="center" justifyContent="space-between" mt={1}>
-          <FormControlLabel control={<Checkbox />} label="Remember me" />
-          <Link href="#" variant="body2">Forgot password?</Link>
-        </Box> */}
-        <Button fullWidth variant="contained" sx={{ mt: 2 }} onClick={toggleLogin}>
-          Sign In
+        <Button
+          fullWidth
+          variant="contained"
+          sx={{ mt: 2 }}
+          onClick={onClickLoginHandler}
+          disabled={isLoading || !isFormValid()} // Disable if loading or form invalid
+        >
+          {isLoading ? 'Signing In...' : 'Sign In'}
         </Button>
         <Box textAlign="center" mt={1}>
-          <Link href="#" variant="body2">Cancal</Link>
+          <Link
+            href="#"
+            variant="body2"
+            onClick={(e) => {
+              e.preventDefault()
+              resetForm() // Reset form when canceling
+              toggleLogin()
+            }}
+          >
+            Cancel
+          </Link>
         </Box>
       </DialogContent>
     </Dialog>
-  );
-};
+  )
+}
 
-
-// const LoginDialog: React.FC<LoginProps> = ({ open, toggleLogin }) => {
-//   const theme = useTheme();
-//   const fullScreen = useMediaQuery(theme.breakpoints.down('sm'));
-
-//   return (
-//     <Dialog
-//       open={open}
-//       onClose={toggleLogin}
-//       fullScreen={fullScreen}
-//     >
-//       <DialogTitle>Login</DialogTitle>
-//       <DialogContent>
-//         <Button
-//           fullWidth
-//           variant="outlined"
-//           startIcon={<GitHubIcon />}
-//           sx={{ mt: 2, mb: 2 }}
-//         >
-//           Sign In With GitHub
-//         </Button>
-//         <Box display="flex" alignItems="center" mb={2}>
-//           <Divider sx={{ flexGrow: 1 }} />
-//           <Typography sx={{ mx: 1 }} color="text.secondary">or</Typography>
-//           <Divider sx={{ flexGrow: 1 }} />
-//         </Box>
-//         <DialogContentText>
-//           Please enter your email and password to log in.
-//         </DialogContentText>
-//         <TextField
-//           autoFocus
-//           margin="dense"
-//           id="email"
-//           label="Email"
-//           placeholder="your@email.com"
-//           type="email"
-//           fullWidth
-//           variant="outlined"
-//         />
-//         <TextField
-//           margin="dense"
-//           id="password"
-//           label="Password"
-//           placeholder="******"
-//           type="password"
-//           fullWidth
-//           variant="outlined"
-//         />
-//         <Box display="flex" alignItems="center" justifyContent="space-between" mt={1}>
-//           <FormControlLabel control={<Checkbox />} label="Remember me" />
-//           <Link href="#" variant="body2">Forgot password?</Link>
-//         </Box>
-//         <Button fullWidth variant="contained" sx={{ mt: 2 }} onClick={toggleLogin}>
-//           Sign In
-//         </Button>
-//         <Box textAlign="center" mt={1}>
-//           <Link href="#" variant="body2">Sign up</Link>
-//         </Box>
-//       </DialogContent>
-//     </Dialog>
-//   );
-// };
-
-export default LoginDialog;
+export default LoginDialog

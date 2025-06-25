@@ -17,4 +17,13 @@ export const theme = createTheme({
       contrastText: '#000',
     },
   },
+  components: {
+    MuiIconButton: {
+      defaultProps: {
+        style: {
+          color: '#fff',
+        },
+      },
+    },
+  },
 })
