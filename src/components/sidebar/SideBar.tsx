@@ -31,7 +31,7 @@ interface Props {
 export default function SideBar(props: Props) {
   const pageStatus = useAppSelector((state) => state.global.pageStatus)
   const pageList = useAppSelector((state) => state.global.pageList)
-  const isLogin = pageStatus.isLogin
+  const { isLogin } = pageStatus
   const dispatch = useAppDispatch()
   const { window } = props
 

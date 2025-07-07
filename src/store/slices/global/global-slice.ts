@@ -7,14 +7,14 @@ const initialPageStatus: PageStatus = {
   currentPage: 'landing',
   isSideBarExpand: false,
   isSideBarClosing: false,
-  isLogin: true,
+  isLogin: false,
 }
 
 const initialState: GlobalState = {
   pageStatus: initialPageStatus,
   greetings: 'Hola',
   pageList: [
-    { path: '/settings', label: 'Settings', componentName: 'settings'  },
+    { path: '/settings', label: 'Settings', componentName: 'settings' },
   ],
 }
 
@@ -25,6 +25,9 @@ const globalSlice = createSlice({
   reducers: {
     setTheme(state, action: PayloadAction<ThemeMode>) {
       state.pageStatus.theme = action.payload
+    },
+    setIsLogin(state, action: PayloadAction<boolean>) {
+      state.pageStatus.isLogin = action.payload
     },
     updatePageStatus(state, action: PayloadAction<PageStatus>) {
       state.pageStatus = action.payload
@@ -49,6 +52,7 @@ export const {
   updatePageStatus,
   setIsSideBarExpand,
   resetUIStatus,
-  setGettings
+  setGettings,
+  setIsLogin,
 } = globalSlice.actions
 export default globalSlice.reducer
