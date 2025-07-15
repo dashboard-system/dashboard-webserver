@@ -12,6 +12,7 @@ import DatabaseManager from './data/database'
 import userRoutes from './routes/users'
 import authRoutes from './routes/auth'
 import healthRoutes from './routes/health' // Updated health routes
+import uciRoutes from './routes/uci'
 
 // Load environment variables
 dotenv.config()
@@ -42,6 +43,7 @@ app.use(express.urlencoded({ extended: true }))
 app.use('/health', healthRoutes) // Now includes /health/db and /health/system
 app.use('/api/users', userRoutes)
 app.use('/api/auth', authRoutes)
+app.use('/api/uci', uciRoutes)
 
 // Global error handler
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
@@ -71,6 +73,7 @@ const server = app.listen(PORT, HOST, () => {
   console.log(`📊 Health check: http://${HOST}:${PORT}/health`)
   console.log(`📊 DB Health check: http://${HOST}:${PORT}/health/db`)
   console.log(`📊 System Health check: http://${HOST}:${PORT}/health/system`)
+  console.log(`⚙️  UCI Config API: http://${HOST}:${PORT}/api/uci`)
   console.log(`🔧 Environment: ${process.env.NODE_ENV || 'development'}`)
 })
 
