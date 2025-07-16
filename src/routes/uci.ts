@@ -1,7 +1,7 @@
 // src/routes/uci.ts
 import { Router, Request, Response } from 'express'
 import { UCIManager } from '../utils/uci'
-import { UCICreateRequest, UCIUpdateRequest, UCIResponse } from '../types/uci'
+import { UCICreateRequest, UCIUpdateRequest, UCIResponse } from '../shared/types/uci'
 import { authenticateToken } from '../middleware/auth'
 
 const router = Router()
