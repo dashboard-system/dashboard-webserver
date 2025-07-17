@@ -22,3 +22,4 @@ export const getValueByPath = (obj: Object, path: String): unknown => {
   }
   return currentValue
 }
+
