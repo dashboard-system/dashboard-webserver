@@ -8,7 +8,11 @@ import UserButton from './UserButton'
 const drawerWidth = 240
 
 export default function ResponsiveDrawer(_props: object) {
-  const greetings = useAppSelector((state) => state.global.greetings)
+  const system = useAppSelector((state) => {
+    const system = state.uci.system?.system
+    return system ? system[Object.keys(system)[0]]?.values : null
+  })
+
   return (
     <AppBar
       position="fixed"
@@ -21,7 +25,7 @@ export default function ResponsiveDrawer(_props: object) {
       <Toolbar sx={{ display: 'flex', justifyContent: 'space-between' }}>
         <MobileHamburgerButton />
         <Typography variant="h6" noWrap component="div">
-          {greetings}
+          {system.greeting || ''}
         </Typography>
         <UserButton />
       </Toolbar>

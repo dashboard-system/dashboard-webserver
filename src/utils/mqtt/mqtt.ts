@@ -8,7 +8,7 @@ export interface MqttConfig {
 export class MqttManager {
   private client: MqttClient | null = null
   private config: MqttConfig | null = null
-  private messageHandlers: Map<string, (topic: string, message: Buffer) => void> = new Map()
+  private messageHandlers: Map<string, (topic: string, message: any) => void> = new Map()
 
   connect(config: MqttConfig): Promise<void> {
     return new Promise((resolve, reject) => {
@@ -45,15 +45,24 @@ export class MqttManager {
   }
 
   private onMessageReceived(topic: string, message: Buffer): void {
-    console.log(`Received message on topic ${topic}:`, message.toString())
+    const messageString = message.toString()
+    console.log(`Received message on topic ${topic}:`, messageString)
     
-    // Call all registered handlers
+    let parsedMessage: any
+    try {
+      parsedMessage = JSON.parse(messageString)
+    } catch (error) {
+      console.warn(`Failed to parse JSON message on topic ${topic}, using string:`, error)
+      parsedMessage = messageString
+    }
+    
+    // Call all registered handlers with parsed message
     this.messageHandlers.forEach((handler, handlerKey) => {
-      handler(topic, message)
+      handler(topic, parsedMessage)
     })
   }
 
-  addMessageHandler(key: string, handler: (topic: string, message: Buffer) => void): void {
+  addMessageHandler(key: string, handler: (topic: string, message: any) => void): void {
     this.messageHandlers.set(key, handler)
   }
 

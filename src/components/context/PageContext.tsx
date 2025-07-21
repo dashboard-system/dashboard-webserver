@@ -34,6 +34,7 @@ const PageContextProvider = ({ children }: { children: ReactNode }) => {
         mqttManager.addMessageHandler('default', (topic, message) => {
           const [type, fileName, sectionName, uuid] = topic.split('/')
           const payload: MqttPayload = {
+            topic,
             type,
             fileName,
             sectionName,
