@@ -2,25 +2,74 @@ import { Grid, TextField, Typography } from '@mui/material'
 import type { FormElementItem } from '../libs/constants/components_interface'
 import { useAppDispatch, useAppSelector } from '../store/hook'
 import { setGettings } from '../store/slices/global/global-slice'
+import { editTopic } from '../store/slices/uci/uci-slice'
 import { getValueByPath } from '../utils/util'
 
 function FormInput({ element }: { element: FormElementItem }) {
   const dispatch = useAppDispatch()
   const state = useAppSelector((state) => state)
-  const handleOnChangeInput = (event: any, element: any) => {
-    console.log(element.key)
-    console.log(event.target.value)
 
+  const handleOnChangeInput = (event: any, element: any) => {
+    // Handle UCI sources
+    const [stateType, fileName, sectionName] = element.source.split('/')
+    if (stateType === 'uci') {
+      const sourceParts = element.source.split('/')
+      if (sourceParts.length >= 3) {
+        const entries = state.uci[fileName]?.[sectionName] || {}
+        const uuids = Object.keys(entries)
+
+        if (uuids.length > 0) {
+          const uuid = uuids[0] // Use first entry or you could make this configurable
+          const currentEntry = entries[uuid] || {}
+          const currentValues = currentEntry.values || {}
+
+          dispatch(
+            editTopic({
+              fileName,
+              sectionName,
+              uuid: uuid,
+              data: {
+                ...currentEntry,
+                values: {
+                  ...currentValues,
+                  [element.key]: event.target.value,
+                },
+              },
+            }),
+          )
+        }
+      }
+    }
+
+    // Handle specific legacy cases if needed
     switch (element.key) {
-      case 'greetings':
+      case 'greeting':
         dispatch(setGettings(event.target.value))
         break
       default:
         break
     }
   }
-  const rawValue = getValueByPath(state, element.source)
+  let rawValue: any
   let displayValue: string | number
+
+  // Handle UCI sources generically
+  if (element.source.startsWith('uci/')) {
+    const sourceParts = element.source.split('/')
+    if (sourceParts.length >= 3) {
+      const fileName = sourceParts[1] // e.g., 'system'
+      const sectionName = sourceParts[2] // e.g., 'system'
+
+      const entries = state.uci[fileName]?.[sectionName] || {}
+      const uuids = Object.keys(entries)
+      rawValue =
+        uuids.length > 0 ? entries[uuids[0]]?.values?.[element.key] : undefined
+    } else {
+      rawValue = undefined
+    }
+  } else {
+    rawValue = getValueByPath(state, element.source)
+  }
 
   if (rawValue === undefined || rawValue === null) {
     displayValue = ''
@@ -39,7 +88,7 @@ function FormInput({ element }: { element: FormElementItem }) {
         return (
           <TextField
             key={element.key}
-            label={element.label}
+            // label={element.label}
             fullWidth
             margin="normal"
             value={displayValue}

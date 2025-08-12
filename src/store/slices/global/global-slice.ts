@@ -1,9 +1,9 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import type { GlobalState, PageStatus } from '../../../libs/store/global'
-import type { ThemeMode } from '../../../theme/DashboardTheme'
+import type { ThemeMode } from '../../../theme/NewDashboardTheme'
 
 const initialPageStatus: PageStatus = {
-  theme: 'system',
+  theme: 'dark',
   currentPage: 'landing',
   isSideBarExpand: false,
   isSideBarClosing: false,
@@ -12,8 +12,14 @@ const initialPageStatus: PageStatus = {
 
 const initialState: GlobalState = {
   pageStatus: initialPageStatus,
+  auth: { token: null },
   greetings: 'Hola',
   pageList: [
+    { path: '/a429', label: 'ARINC 429', componentName: 'a429' },
+    { path: '/lights', label: 'Lights', componentName: 'lights' },
+    { path: '/ac', label: 'Air Conditioning', componentName: 'ac' },
+    { path: '/bluetooth', label: 'Bluetooth', componentName: 'bluetooth' },
+    { path: '/music', label: 'Music', componentName: 'music' },
     { path: '/settings', label: 'Settings', componentName: 'settings' },
   ],
 }
@@ -25,6 +31,9 @@ const globalSlice = createSlice({
   reducers: {
     setTheme(state, action: PayloadAction<ThemeMode>) {
       state.pageStatus.theme = action.payload
+    },
+    setToken(state, action: PayloadAction<string | null>) {
+      state.auth.token = action.payload
     },
     setIsLogin(state, action: PayloadAction<boolean>) {
       state.pageStatus.isLogin = action.payload
@@ -54,5 +63,7 @@ export const {
   resetUIStatus,
   setGettings,
   setIsLogin,
+  setToken,
+  setTheme,
 } = globalSlice.actions
 export default globalSlice.reducer

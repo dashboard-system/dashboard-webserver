@@ -31,7 +31,7 @@ export default function MainContent(props: Props) {
         }}
       >
         <Toolbar />
-        <Box sx={{ width: '85vw', height: '100vh' }}>
+        <Box sx={{ width: '70vw', height: '100vh' }}>
           <Routes>
             <Route
               path="/"
@@ -39,6 +39,7 @@ export default function MainContent(props: Props) {
             />
             {pageList.map((pageItem: PageItem) => (
               <Route
+                key={pageItem.path}
                 path={pageItem.path}
                 element={
                   <PageSuspenseRoute componentName={pageItem.componentName} />

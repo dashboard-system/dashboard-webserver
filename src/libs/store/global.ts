@@ -1,4 +1,4 @@
-import type { ThemeMode } from '../../theme/DashboardTheme'
+import type { ThemeMode } from '../../theme/NewDashboardTheme'
 
 interface PageStatus {
   theme: ThemeMode
@@ -14,12 +14,17 @@ interface PageItem {
   componentName: string
 }
 
+interface AuthStatus {
+  token: string | null
+}
+
 type PageList = PageItem[]
 
 interface GlobalState {
   pageStatus: PageStatus
   greetings: string
   pageList: PageList
+  auth: AuthStatus
 }
 
 export type { PageStatus, GlobalState, PageItem }

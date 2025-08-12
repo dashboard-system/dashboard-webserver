@@ -8,6 +8,11 @@ interface PageSuspenseRouteProps {
 const pageMap: Record<string, React.LazyExoticComponent<ComponentType<any>>> = {
   landing: lazy(() => import('../../pages/landing/Landing')),
   settings: lazy(() => import('../../pages/settings/Settings')),
+  a429: lazy(() => import('../../pages/a429/A429')),
+  lights: lazy(() => import('../../pages/lights/Lights')),
+  ac: lazy(() => import('../../pages/ac/AC')),
+  bluetooth: lazy(() => import('../../pages/bluetooth/Bluetooth')),
+  music: lazy(() => import('../../pages/music/Music')),
 }
 
 function PageSuspenseRoute({ componentName }: PageSuspenseRouteProps) {

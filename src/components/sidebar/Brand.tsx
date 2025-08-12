@@ -1,5 +1,6 @@
 import { Toolbar, Typography } from '@mui/material'
 import LogoIcon from '../LogoIcon'
+import { useNavigate } from 'react-router-dom'
 
 const style = {
   icon: { display: { sm: 'flex' }, mr: 1 },
@@ -11,18 +12,27 @@ const style = {
     letterSpacing: '.3rem',
     color: 'inherit',
     textDecoration: 'none',
+    cursor: 'pointer',
   },
+  toolbar: {
+    cursor: 'pointer',
+  }
 }
 
-function Brand() {
+function  Brand() {
+  const navigate = useNavigate()
+
+  const handleClick = () => {
+    navigate('/')
+  }
+
   return (
-    <Toolbar>
-      {/* <Snowboarding sx={style.icon} /> */}
+    <Toolbar onClick={handleClick} sx={style.toolbar}>
       <LogoIcon sx={style.icon} fontSize="large" />
       <Typography
         variant="h6"
         noWrap
-        component="a"
+        component="div"
         color="info"
         sx={style.text}
       >

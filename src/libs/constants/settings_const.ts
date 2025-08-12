@@ -1,16 +1,24 @@
-import type { ElementList, FormElementItem } from './components_interface'
+import type { ElementList } from './components_interface'
 
 const settingFormElementList: ElementList = [
   {
-    key: 'greetings',
+    key: 'greeting',
     label: 'Greeting Text',
     type: 'textfield',
-    source: 'global/greetings',
+    source: 'uci/system/system',
+  },
+  {
+    key: 'hostname',
+    label: 'Hostname',
+    type: 'textfield',
+    source: 'uci/system/system',
+  },
+  {
+    key: 'description',
+    label: 'Description',
+    type: 'textfield',
+    source: 'uci/system/system',
   },
 ]
-
-function FormInput({ element }: { element: FormElementItem }) {
-  // component implementation
-}
 
 export { settingFormElementList }

@@ -15,7 +15,7 @@ import {
 import { fetchPost } from '../utils/fetch'
 import { successMessage } from '../utils/message'
 import { useAppDispatch } from '../store/hook'
-import { setIsLogin } from '../store/slices/global/global-slice'
+import { setIsLogin, setToken } from '../store/slices/global/global-slice'
 
 // Import validation functions
 import {
@@ -23,7 +23,7 @@ import {
   validateLoginField,
   prepareLoginData,
   type LoginFormData,
-  type FormValidationErrors
+  type FormValidationErrors,
 } from '../utils/validation'
 
 interface LoginProps {
@@ -40,22 +40,23 @@ const LoginDialog: React.FC<LoginProps> = ({ open, toggleLogin }) => {
     password: '',
   })
   const [error, setError] = useState<string>('') // General error state
-  const [validationErrors, setValidationErrors] = useState<FormValidationErrors>({}) // Field-specific errors
+  const [validationErrors, setValidationErrors] =
+    useState<FormValidationErrors>({}) // Field-specific errors
   const [isLoading, setIsLoading] = useState(false)
 
   const handleOnChangeFormInput = (ev: React.ChangeEvent<HTMLInputElement>) => {
     const { value, id } = ev.target
     setError('') // Clear general error when user starts typing
-    
+
     // Real-time field validation
     const fieldValidation = validateLoginField(id as keyof LoginFormData, value)
-    
+
     // Update field-specific validation errors
-    setValidationErrors(prev => ({
+    setValidationErrors((prev) => ({
       ...prev,
-      [id]: fieldValidation.isValid ? undefined : fieldValidation.error
+      [id]: fieldValidation.isValid ? undefined : fieldValidation.error,
     }))
-    
+
     setLoginForm((obj) => ({ ...obj, [id]: value }))
   }
 
@@ -64,22 +65,25 @@ const LoginDialog: React.FC<LoginProps> = ({ open, toggleLogin }) => {
   ) => {
     ev.preventDefault()
     setError('') // Clear previous errors
-    
+
     // Validate entire form before submission
     const validation = validateLoginForm(loginForm)
-    
+
     if (!validation.isValid) {
       setValidationErrors(validation.errors as FormValidationErrors)
       return // Stop submission if validation fails
     }
-    
+
     setIsLoading(true)
 
     try {
       // Prepare and sanitize data for submission
       const preparedData = prepareLoginData(loginForm)
-      
-      const resp = await fetchPost({ url: '/api/auth/login', data: preparedData })
+
+      const resp = await fetchPost({
+        url: '/api/auth/login',
+        data: preparedData,
+      })
       const result = await resp.json()
 
       if (result.error) {
@@ -88,12 +92,14 @@ const LoginDialog: React.FC<LoginProps> = ({ open, toggleLogin }) => {
 
       // Success - handle login
       successMessage('Login Success!')
+      localStorage.setItem('token', result.token)
+      dispatch(setToken(result.token))
       dispatch(setIsLogin(true))
-      
+
       // Reset form on success
       setLoginForm({ username: '', password: '' })
       setValidationErrors({})
-      
+
       toggleLogin() // Close dialog on success
     } catch (error) {
       console.error('Login Request:', error)
@@ -118,7 +124,9 @@ const LoginDialog: React.FC<LoginProps> = ({ open, toggleLogin }) => {
   // Check if form is valid for button state
   const isFormValid = () => {
     const hasContent = loginForm.username.trim() && loginForm.password
-    const hasNoValidationErrors = Object.values(validationErrors).every(error => !error)
+    const hasNoValidationErrors = Object.values(validationErrors).every(
+      (error) => !error,
+    )
     return hasContent && hasNoValidationErrors
   }
 

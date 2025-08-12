@@ -25,7 +25,7 @@ export default function ResponsiveDrawer(_props: object) {
       <Toolbar sx={{ display: 'flex', justifyContent: 'space-between' }}>
         <MobileHamburgerButton />
         <Typography variant="h6" noWrap component="div">
-          {system.greeting || ''}
+          {system?.greeting || ''}
         </Typography>
         <UserButton />
       </Toolbar>

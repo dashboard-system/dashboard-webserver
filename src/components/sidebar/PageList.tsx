@@ -7,28 +7,30 @@ import ListItemText from '@mui/material/ListItemText'
 import { useAppSelector } from '../../store/hook'
 import type { PageItem } from '../../libs/store/global'
 import { lazySidebarIcons } from '../../libs/constants/sidebar'
-import { Link } from 'react-router'
+import { useNavigate } from 'react-router'
 
 function PageList() {
   const pageList = useAppSelector((state) => state.global.pageList)
+  const navigate = useNavigate()
   
   const createSideBarIcon = (name: string) => {
     return React.createElement(lazySidebarIcons[name])
+  }
+
+  const handleNavigation = (path: string) => {
+    navigate(path)
   }
   return (
     <List>
       {pageList.map((pageItem: PageItem, index) => (
         <ListItem key={pageItem.label} disablePadding>
-          <ListItemButton>
+          <ListItemButton onClick={() => handleNavigation(pageItem.path)}>
             <ListItemIcon>
-              {/* {index % 2 === 0 ? <InboxIcon /> : <MailIcon />} */}
               <Suspense fallback={null}>
                 {createSideBarIcon(pageItem.componentName)}
               </Suspense>
             </ListItemIcon>
-            <Link to={pageItem.path} color="inherit">
-              <ListItemText primary={pageItem.label} />
-            </Link>
+            <ListItemText primary={pageItem.label} sx={{ color: 'white' }} />
           </ListItemButton>
         </ListItem>
       ))}
