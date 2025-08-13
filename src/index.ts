@@ -12,7 +12,7 @@ import DatabaseManager from './data/database'
 // Import route modules
 import userRoutes from './routes/users'
 import authRoutes from './routes/auth'
-import healthRoutes from './routes/health' // Updated health routes
+import healthRoutes from './routes/health'
 import uciRoutes from './routes/uci'
 
 // Import middleware
@@ -37,14 +37,18 @@ try {
 }
 
 // Middleware
-app.use(helmet())
+app.use(helmet({
+  contentSecurityPolicy: false,
+  crossOriginOpenerPolicy: false,
+  crossOriginResourcePolicy: false,
+}))
 app.use(cors())
 app.use(morgan('combined'))
 app.use(express.json({ limit: '10mb' }))
 app.use(express.urlencoded({ extended: true }))
 
 // API Routes
-app.use('/health', healthRoutes) // Now includes /health/db and /health/system
+app.use('/health', healthRoutes)
 app.use('/api/users', userRoutes)
 app.use('/api/auth', authRoutes)
 app.use('/api/uci', uciRoutes)
@@ -80,7 +84,7 @@ if (isAbleAccessUI) {
 }
 
 // Global error handler
-app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
+app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
   console.error('Error:', err.stack)
 
   res.status(500).json({
