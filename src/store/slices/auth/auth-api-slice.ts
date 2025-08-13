@@ -1,4 +1,5 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
+import { errorMessage } from '../../../utils/message'
 
 interface LoginRequest {
   username: string
@@ -34,6 +35,14 @@ export const authApiSlice = createApi({
       headers.set('Content-Type', 'application/json')
       headers.set('Authorization', `Bearer ${localStorage.getItem('token')}`)
       return headers
+    },
+    responseHandler: async (response) => {
+      if (response.status === 403) {
+        errorMessage(
+          'Access denied: You do not have permission to perform this action',
+        )
+      }
+      return response.json()
     },
   }),
   endpoints(builder) {

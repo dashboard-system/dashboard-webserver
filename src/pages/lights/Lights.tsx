@@ -1,45 +1,141 @@
-import React, { useState } from 'react'
-import {
-  Box,
-  Card,
-  CardContent,
-  Typography,
-  Slider,
-  Switch,
-  FormControlLabel,
-  Grid,
-  Paper,
-  Divider,
-} from '@mui/material'
-import LightbulbIcon from '@mui/icons-material/Lightbulb'
-import LightbulbOutlinedIcon from '@mui/icons-material/LightbulbOutlined'
+import { useMemo } from 'react'
+import { Box, Typography, Grid } from '@mui/material'
+import { useAppSelector, useAppDispatch } from '../../store/hook'
+import { useUpdateUCIEntryMutation } from '../../store/slices/uci/uci-api-slice'
+import { editTopic } from '../../store/slices/uci/uci-slice'
+import LightCard from '../../components/LightCard'
+import LightSystemStatus from '../../components/LightSystemStatus'
 
-interface LightControl {
-  id: string
-  name: string
-  brightness: number
-  enabled: boolean
+
+interface UCILightEntry {
+  uuid: string
+  sectionType: string
+  sectionName: string
+  fileName: string
+  values: {
+    enabled: number
+    brightness: number
+  }
+  lastModified: string
 }
 
 function Lights() {
-  const [lights, setLights] = useState<LightControl[]>([
-    { id: 'cockpit', name: 'Cockpit Lights', brightness: 75, enabled: true },
-    { id: 'cabin', name: 'Cabin Lights', brightness: 50, enabled: true },
-    { id: 'exterior', name: 'Exterior Lights', brightness: 100, enabled: false },
-    { id: 'instrument', name: 'Instrument Panel', brightness: 80, enabled: true },
-    { id: 'reading', name: 'Reading Lights', brightness: 30, enabled: false },
-  ])
+  const dispatch = useAppDispatch()
+  const uciLights = useAppSelector((state) => state.uci?.lights?.controls)
+  const [updateUCIEntry, { isLoading: isUpdating }] =
+    useUpdateUCIEntryMutation()
 
-  const handleBrightnessChange = (id: string, value: number) => {
-    setLights(prev => prev.map(light => 
-      light.id === id ? { ...light, brightness: value } : light
-    ))
+  // Transform UCI data to component format
+  const lights = useMemo(() => {
+    if (!uciLights) return []
+
+    const lightNameMap: Record<string, string> = {
+      cockpit: 'Cockpit Lights',
+      cabin: 'Cabin Lights',
+      controls_6: 'Exterior Lights', // This seems to be controls_6 in the data
+      instrument: 'Instrument Panel',
+      reading: 'Reading Lights',
+    }
+
+    return Object.values(uciLights).map((entry: UCILightEntry) => ({
+      id: entry.sectionName,
+      name: lightNameMap[entry.sectionName] || entry.sectionName,
+      brightness: entry.values.brightness,
+      enabled: entry.values.enabled === 1,
+      uuid: entry.uuid,
+    }))
+  }, [uciLights])
+
+  const handleBrightnessChange = async (id: string, value: number) => {
+    const light = lights.find((l) => l.id === id)
+    if (!light) return
+
+    // Update local UCI state first
+    const updatedEntry = {
+      ...uciLights[light.uuid],
+      values: {
+        ...uciLights[light.uuid].values,
+        brightness: value,
+      },
+      lastModified: new Date().toISOString(),
+    }
+
+    dispatch(
+      editTopic({
+        fileName: 'lights',
+        sectionName: 'controls',
+        uuid: light.uuid,
+        data: updatedEntry,
+      }),
+    )
+
+    // Fire and forget - don't await to prevent UI blocking
+    updateUCIEntry({
+      uuid: light.uuid,
+      sectionType: 'controls',
+      sectionName: light.id,
+      fileName: 'lights',
+      values: {
+        enabled: light.enabled ? 1 : 0,
+        brightness: value,
+      },
+      lastModified: new Date().toISOString(),
+    }).catch((error) => {
+      console.error('Failed to update light brightness:', error)
+    })
   }
 
-  const handleToggle = (id: string) => {
-    setLights(prev => prev.map(light => 
-      light.id === id ? { ...light, enabled: !light.enabled } : light
-    ))
+  const handleToggle = async (id: string) => {
+    const light = lights.find((l) => l.id === id)
+    if (!light) return
+
+    // Update local UCI state first
+    const updatedEntry = {
+      ...uciLights[light.uuid],
+      values: {
+        ...uciLights[light.uuid].values,
+        enabled: light.enabled ? 0 : 1,
+      },
+      lastModified: new Date().toISOString(),
+    }
+
+    dispatch(
+      editTopic({
+        fileName: 'lights',
+        sectionName: 'controls',
+        uuid: light.uuid,
+        data: updatedEntry,
+      }),
+    )
+
+    // Fire and forget - don't await to prevent UI blocking
+    updateUCIEntry({
+      uuid: light.uuid,
+      sectionType: 'controls',
+      sectionName: light.id,
+      fileName: 'lights',
+      values: {
+        enabled: light.enabled ? 0 : 1,
+        brightness: light.brightness,
+      },
+      lastModified: new Date().toISOString(),
+    }).catch((error) => {
+      console.error('Failed to toggle light:', error)
+    })
+  }
+
+  // Show loading or empty state when no data
+  if (!uciLights) {
+    return (
+      <Box sx={{ p: 3, textAlign: 'center' }}>
+        <Typography variant="h4" gutterBottom sx={{ mb: 3 }}>
+          Lighting Controls
+        </Typography>
+        <Typography variant="body1" color="text.secondary">
+          Loading lighting controls...
+        </Typography>
+      </Box>
+    )
   }
 
   return (
@@ -47,74 +143,21 @@ function Lights() {
       <Typography variant="h4" gutterBottom sx={{ mb: 3 }}>
         Lighting Controls
       </Typography>
-      
+
       <Grid container spacing={3}>
         {lights.map((light) => (
           <Grid item xs={12} md={6} key={light.id}>
-            <Card elevation={2}>
-              <CardContent>
-                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                  {light.enabled ? (
-                    <LightbulbIcon sx={{ mr: 2, color: 'warning.main' }} />
-                  ) : (
-                    <LightbulbOutlinedIcon sx={{ mr: 2, color: 'grey.400' }} />
-                  )}
-                  <Typography variant="h6" sx={{ flexGrow: 1 }}>
-                    {light.name}
-                  </Typography>
-                  <FormControlLabel
-                    control={
-                      <Switch
-                        checked={light.enabled}
-                        onChange={() => handleToggle(light.id)}
-                      />
-                    }
-                    label=""
-                    sx={{ m: 0 }}
-                  />
-                </Box>
-                
-                <Divider sx={{ my: 2 }} />
-                
-                <Typography gutterBottom>
-                  Brightness: {light.brightness}%
-                </Typography>
-                <Slider
-                  value={light.brightness}
-                  onChange={(_, value) => handleBrightnessChange(light.id, value as number)}
-                  disabled={!light.enabled}
-                  min={0}
-                  max={100}
-                  step={5}
-                  marks={[
-                    { value: 0, label: '0%' },
-                    { value: 50, label: '50%' },
-                    { value: 100, label: '100%' },
-                  ]}
-                  sx={{
-                    color: light.enabled ? 'warning.main' : 'grey.400',
-                    '& .MuiSlider-thumb': {
-                      backgroundColor: light.enabled ? 'warning.main' : 'grey.400',
-                    },
-                  }}
-                />
-              </CardContent>
-            </Card>
+            <LightCard
+              light={light}
+              isUpdating={isUpdating}
+              onToggle={handleToggle}
+              onBrightnessChange={handleBrightnessChange}
+            />
           </Grid>
         ))}
       </Grid>
-      
-      <Paper sx={{ mt: 4, p: 2, bgcolor: 'background.paper' }}>
-        <Typography variant="h6" gutterBottom>
-          System Status
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
-          Total Active Lights: {lights.filter(l => l.enabled).length} / {lights.length}
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
-          Average Brightness: {Math.round(lights.reduce((acc, light) => acc + (light.enabled ? light.brightness : 0), 0) / lights.filter(l => l.enabled).length || 0)}%
-        </Typography>
-      </Paper>
+
+      <LightSystemStatus lights={lights} />
     </Box>
   )
 }

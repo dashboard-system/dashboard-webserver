@@ -46,7 +46,7 @@ export class MqttManager {
 
   private onMessageReceived(topic: string, message: Buffer): void {
     const messageString = message.toString()
-    console.log(`Received message on topic ${topic}:`, messageString)
+    //console.log(`Received message on topic ${topic}:`, messageString)
     
     let parsedMessage: any
     try {

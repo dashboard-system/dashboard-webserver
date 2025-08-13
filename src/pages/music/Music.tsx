@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react'
+import React, { useState, useRef, useEffect, useMemo } from 'react'
 import {
   Box,
   Card,
@@ -26,6 +26,7 @@ import VolumeUpIcon from '@mui/icons-material/VolumeUp'
 import VolumeOffIcon from '@mui/icons-material/VolumeOff'
 import MusicNoteIcon from '@mui/icons-material/MusicNote'
 import QueueMusicIcon from '@mui/icons-material/QueueMusic'
+import { useAppSelector } from '../../store/hook'
 
 interface Song {
   id: number
@@ -34,79 +35,106 @@ interface Song {
   album: string
   duration: number
   cover?: string
+  src: string
+}
+
+interface UCIMusicEntry {
+  uuid: string
+  sectionType: string
+  sectionName: string
+  fileName: string
+  values: {
+    id: number
+    title: string
+    artist: string
+    album: string
+    duration: number
+    cover: string
+    src: string
+  }
+  lastModified: string
 }
 
 function Music() {
-  const [playlist] = useState<Song[]>([
-    {
-      id: 1,
-      title: 'Bohemian Rhapsody',
-      artist: 'Queen',
-      album: 'A Night at the Opera',
-      duration: 355, // 5:55
-      cover: '🎸'
-    },
-    {
-      id: 2,
-      title: 'Hotel California',
-      artist: 'Eagles',
-      album: 'Hotel California',
-      duration: 391, // 6:31
-      cover: '🦅'
-    },
-    {
-      id: 3,
-      title: 'Stairway to Heaven',
-      artist: 'Led Zeppelin',
-      album: 'Led Zeppelin IV',
-      duration: 482, // 8:02
-      cover: '⚡'
-    }
-  ])
+  const uciMusic = useAppSelector((state) => state.uci?.music?.song)
+
+  // Transform UCI data to component format
+  const playlist = useMemo(() => {
+    if (!uciMusic) return []
+
+    return Object.values(uciMusic).map((entry: UCIMusicEntry) => ({
+      id: entry.values.id,
+      title: entry.values.title.replace(/'/g, ''), // Remove quotes
+      artist: entry.values.artist.replace(/'/g, ''),
+      album: entry.values.album.replace(/'/g, ''),
+      duration: entry.values.duration,
+      cover: entry.values.cover,
+      src: entry.values.src,
+    }))
+  }, [uciMusic])
 
   const [currentSong, setCurrentSong] = useState(0)
   const [isPlaying, setIsPlaying] = useState(false)
   const [currentTime, setCurrentTime] = useState(0)
-  const [volume, setVolume] = useState(70)
+  const [volume, setVolume] = useState(0.7)
   const [isMuted, setIsMuted] = useState(false)
   const [shuffle, setShuffle] = useState(false)
   const [repeat, setRepeat] = useState(false)
 
-  const intervalRef = useRef<NodeJS.Timeout | null>(null)
+  const audioRef = useRef<HTMLAudioElement>(null)
 
   useEffect(() => {
-    if (isPlaying) {
-      intervalRef.current = setInterval(() => {
-        setCurrentTime(prev => {
-          const newTime = prev + 1
-          if (newTime >= playlist[currentSong].duration) {
-            handleNext()
-            return 0
-          }
-          return newTime
-        })
-      }, 1000)
-    } else {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current)
+    if (audioRef.current) {
+      audioRef.current.volume = isMuted ? 0 : volume
+      audioRef.current.src = playlist[currentSong].src
+      if (isPlaying) {
+        audioRef.current.play()
+      }
+    }
+  }, [currentSong, isPlaying, volume, isMuted, playlist])
+
+  useEffect(() => {
+    const audio = audioRef.current
+    if (!audio) return
+
+    const updateTime = () => {
+      setCurrentTime(audio.currentTime)
+    }
+
+    const handleEnded = () => {
+      if (repeat) {
+        setCurrentTime(0)
+        audio.currentTime = 0
+        audio.play()
+      } else {
+        handleNext()
       }
     }
 
+    audio.addEventListener('timeupdate', updateTime)
+    audio.addEventListener('ended', handleEnded)
+
     return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current)
-      }
+      audio.removeEventListener('timeupdate', updateTime)
+      audio.removeEventListener('ended', handleEnded)
     }
-  }, [isPlaying, currentSong, playlist])
+  }, [currentSong, repeat])
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60)
-    const secs = seconds % 60
+    const secs = Math.floor(seconds % 60)
     return `${mins}:${secs.toString().padStart(2, '0')}`
   }
 
   const handlePlayPause = () => {
-    setIsPlaying(!isPlaying)
+    if (audioRef.current) {
+      if (isPlaying) {
+        audioRef.current.pause()
+      } else {
+        audioRef.current.play()
+      }
+      setIsPlaying(!isPlaying)
+    }
   }
 
   const handleNext = () => {
@@ -121,6 +149,9 @@ function Music() {
   const handlePrevious = () => {
     if (currentTime > 10) {
       setCurrentTime(0)
+      if (audioRef.current) {
+        audioRef.current.currentTime = 0
+      }
     } else {
       setCurrentSong((prev) => (prev - 1 + playlist.length) % playlist.length)
       setCurrentTime(0)
@@ -129,6 +160,9 @@ function Music() {
 
   const handleSeek = (value: number) => {
     setCurrentTime(value)
+    if (audioRef.current) {
+      audioRef.current.currentTime = value
+    }
   }
 
   const handleSongSelect = (index: number) => {
@@ -138,7 +172,11 @@ function Music() {
   }
 
   const handleVolumeChange = (value: number) => {
-    setVolume(value)
+    const newVolume = value / 100
+    setVolume(newVolume)
+    if (audioRef.current) {
+      audioRef.current.volume = newVolume
+    }
     if (value === 0) {
       setIsMuted(true)
     } else {
@@ -148,6 +186,9 @@ function Music() {
 
   const toggleMute = () => {
     setIsMuted(!isMuted)
+    if (audioRef.current) {
+      audioRef.current.volume = isMuted ? volume : 0
+    }
   }
 
   const currentSongData = playlist[currentSong]
@@ -155,6 +196,7 @@ function Music() {
 
   return (
     <Box sx={{ p: 3 }}>
+      <audio ref={audioRef} />
       <Typography variant="h4" gutterBottom sx={{ mb: 3 }}>
         Music Player
       </Typography>
@@ -257,13 +299,13 @@ function Music() {
                   {isMuted || volume === 0 ? <VolumeOffIcon /> : <VolumeUpIcon />}
                 </IconButton>
                 <Slider
-                  value={isMuted ? 0 : volume}
+                  value={isMuted ? 0 : volume * 100}
                   onChange={(_, value) => handleVolumeChange(value as number)}
                   max={100}
                   sx={{ flexGrow: 1 }}
                 />
                 <Typography variant="caption" sx={{ minWidth: 30 }}>
-                  {isMuted ? 0 : volume}%
+                  {isMuted ? 0 : Math.round(volume * 100)}%
                 </Typography>
               </Box>
             </Paper>

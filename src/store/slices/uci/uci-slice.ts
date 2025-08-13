@@ -15,7 +15,15 @@ const uciSlice = createSlice({
   name: 'uci',
   initialState,
   reducers: {
-    addTopic(state, action: PayloadAction<{ fileName: string; sectionName: string; uuid: string; message: any }>) {
+    addTopic(
+      state,
+      action: PayloadAction<{
+        fileName: string
+        sectionName: string
+        uuid: string
+        message: any
+      }>,
+    ) {
       const { fileName, sectionName, uuid, message } = action.payload
       if (!state[fileName]) {
         state[fileName] = {}
@@ -26,14 +34,25 @@ const uciSlice = createSlice({
         state.reset[fileName][sectionName] = {}
       }
 
-      state[fileName][sectionName][uuid] = message
+      state[fileName][sectionName][uuid] = {
+        ...state[fileName][sectionName][uuid],
+        ...message,
+      }
       state.reset[fileName][sectionName][uuid] = message
       state.unsaveChangesList = state.unsaveChangesList.filter(
         (i) => !i.includes(`${fileName}-${sectionName}-${uuid}`),
       )
     },
     // deleteTopic
-    deleteTopic(state, action: PayloadAction<{ fileName: string; sectionName: string; uuid: string; hasOrder?: boolean }>) {
+    deleteTopic(
+      state,
+      action: PayloadAction<{
+        fileName: string
+        sectionName: string
+        uuid: string
+        hasOrder?: boolean
+      }>,
+    ) {
       const { fileName, sectionName, uuid, hasOrder } = action.payload
       delete state[fileName][sectionName][uuid]
       if (state.reset[fileName][sectionName][uuid])
@@ -44,7 +63,16 @@ const uciSlice = createSlice({
       )
     },
     // editTopic
-    editTopic(state, action: PayloadAction<{ fileName: string; sectionName: string; uuid: string; data: any; key?: string }>) {
+    editTopic(
+      state,
+      action: PayloadAction<{
+        fileName: string
+        sectionName: string
+        uuid: string
+        data: any
+        key?: string
+      }>,
+    ) {
       const { fileName, sectionName, uuid, data, key } = action.payload
       const currentState = current(state) // read Proxy object
       state[fileName][sectionName][uuid] = data
@@ -89,7 +117,15 @@ const uciSlice = createSlice({
         ]
       }
     },
-    addPendingTopic(state, action: PayloadAction<{ fileName: string; sectionName: string; data: any; hasOrder?: boolean }>) {
+    addPendingTopic(
+      state,
+      action: PayloadAction<{
+        fileName: string
+        sectionName: string
+        data: any
+        hasOrder?: boolean
+      }>,
+    ) {
       const { fileName, sectionName, data, hasOrder } = action.payload
       if (!state[fileName]) {
         state[fileName] = {}
@@ -129,7 +165,14 @@ const uciSlice = createSlice({
       }
     },
     // resetTopic
-    resetTopic(state, action: PayloadAction<{ fileName: string; sectionName: string; hasOrder?: boolean }>) {
+    resetTopic(
+      state,
+      action: PayloadAction<{
+        fileName: string
+        sectionName: string
+        hasOrder?: boolean
+      }>,
+    ) {
       // need file name/ section name
       const { fileName, sectionName, hasOrder } = action.payload
       state[fileName][sectionName] = state.reset[fileName]?.[sectionName]
@@ -147,7 +190,14 @@ const uciSlice = createSlice({
     resetAllUciTopic(state, action: PayloadAction<void>) {
       return { ...state.reset, reset: state.reset, unsaveChangesList: [] }
     },
-    resetTopicByUUID(state, action: PayloadAction<{ fileName: string; sectionName: string; uuid: string }>) {
+    resetTopicByUUID(
+      state,
+      action: PayloadAction<{
+        fileName: string
+        sectionName: string
+        uuid: string
+      }>,
+    ) {
       // need file name/ section name
       const { fileName, sectionName, uuid } = action.payload
       state[fileName][sectionName][uuid] =
@@ -156,7 +206,16 @@ const uciSlice = createSlice({
         (i) => !i.includes(`${fileName}-${sectionName}-${uuid}`),
       )
     },
-    setUnsaveChangesList(state, action: PayloadAction<{ curVal: any; fileName: string; sectionName: string; uuid: string; key: string }>) {
+    setUnsaveChangesList(
+      state,
+      action: PayloadAction<{
+        curVal: any
+        fileName: string
+        sectionName: string
+        uuid: string
+        key: string
+      }>,
+    ) {
       const { curVal, fileName, sectionName, uuid, key } = action.payload
       if (curVal !== state.reset[fileName][sectionName][uuid][key]) {
         state.unsaveChangesList = [
@@ -174,7 +233,10 @@ const uciSlice = createSlice({
     emptyUnsaveChangesList(state, action: PayloadAction<void>) {
       state.unsaveChangesList = []
     },
-    editOrderList(state, action: PayloadAction<{ orderName: string; data: any }>) {
+    editOrderList(
+      state,
+      action: PayloadAction<{ orderName: string; data: any }>,
+    ) {
       const { orderName, data } = action.payload
       const currentState = current(state)
       state[orderName] = data

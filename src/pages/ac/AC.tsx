@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useMemo } from 'react'
 import {
   Box,
   Card,
@@ -18,6 +18,9 @@ import AcUnitIcon from '@mui/icons-material/AcUnit'
 import ThermostatIcon from '@mui/icons-material/Thermostat'
 import AirIcon from '@mui/icons-material/Air'
 import LocalFireDepartmentIcon from '@mui/icons-material/LocalFireDepartment'
+import { useAppSelector, useAppDispatch } from '../../store/hook'
+import { useUpdateUCIEntryMutation } from '../../store/slices/uci/uci-api-slice'
+import { editTopic } from '../../store/slices/uci/uci-slice'
 
 interface ACZone {
   id: string
@@ -27,39 +30,206 @@ interface ACZone {
   enabled: boolean
   mode: 'cool' | 'heat' | 'auto'
   fanSpeed: number
+  uuid: string
+}
+
+interface UCIACEntry {
+  uuid: string
+  sectionType: string
+  sectionName: string
+  fileName: string
+  values: {
+    enabled: number
+    target_temp: number
+    fan_speed: number
+    mode: string
+  }
+  lastModified: string
 }
 
 function AC() {
-  const [zones, setZones] = useState<ACZone[]>([
-    { id: 'cockpit', name: 'Cockpit', temperature: 22, targetTemp: 21, enabled: true, mode: 'cool', fanSpeed: 3 },
-    { id: 'cabin', name: 'Cabin', temperature: 24, targetTemp: 23, enabled: true, mode: 'cool', fanSpeed: 2 },
-    { id: 'cargo', name: 'Cargo Hold', temperature: 18, targetTemp: 15, enabled: false, mode: 'auto', fanSpeed: 1 },
-  ])
+  const dispatch = useAppDispatch()
+  const uciAC = useAppSelector((state) => state.uci?.ac?.controls)
+  const [updateUCIEntry, { isLoading: isUpdating }] = useUpdateUCIEntryMutation()
+
+  // Transform UCI data to component format
+  const zones = useMemo(() => {
+    if (!uciAC) return []
+
+    const zoneNameMap: Record<string, string> = {
+      cockpit: 'Cockpit',
+      cabin: 'Cabin', 
+      cargo: 'Cargo Hold',
+    }
+
+    return Object.values(uciAC).map((entry: UCIACEntry) => ({
+      id: entry.sectionName,
+      name: zoneNameMap[entry.sectionName] || entry.sectionName,
+      temperature: entry.values.target_temp + 1, // Mock current temp
+      targetTemp: entry.values.target_temp,
+      enabled: entry.values.enabled === 1,
+      mode: entry.values.mode as 'cool' | 'heat' | 'auto',
+      fanSpeed: entry.values.fan_speed,
+      uuid: entry.uuid,
+    }))
+  }, [uciAC])
 
   const [masterEnabled, setMasterEnabled] = useState(true)
 
-  const handleTargetTempChange = (id: string, value: number) => {
-    setZones(prev => prev.map(zone => 
-      zone.id === id ? { ...zone, targetTemp: value } : zone
-    ))
+  const handleTargetTempChange = async (id: string, value: number) => {
+    const zone = zones.find((z) => z.id === id)
+    if (!zone) return
+
+    // Update local UCI state first
+    const updatedEntry = {
+      ...uciAC[zone.uuid],
+      values: {
+        ...uciAC[zone.uuid].values,
+        target_temp: value,
+      },
+      lastModified: new Date().toISOString(),
+    }
+
+    dispatch(editTopic({
+      fileName: 'ac',
+      sectionName: 'controls',
+      uuid: zone.uuid,
+      data: updatedEntry,
+    }))
+
+    // Fire and forget - don't await to prevent UI blocking
+    updateUCIEntry({
+      uuid: zone.uuid,
+      sectionType: 'controls',
+      sectionName: zone.id,
+      fileName: 'ac',
+      values: {
+        enabled: zone.enabled ? 1 : 0,
+        target_temp: value,
+        fan_speed: zone.fanSpeed,
+        mode: zone.mode,
+      },
+      lastModified: new Date().toISOString(),
+    }).catch((error) => {
+      console.error('Failed to update AC target temperature:', error)
+    })
   }
 
-  const handleFanSpeedChange = (id: string, value: number) => {
-    setZones(prev => prev.map(zone => 
-      zone.id === id ? { ...zone, fanSpeed: value } : zone
-    ))
+  const handleFanSpeedChange = async (id: string, value: number) => {
+    const zone = zones.find((z) => z.id === id)
+    if (!zone) return
+
+    // Update local UCI state first
+    const updatedEntry = {
+      ...uciAC[zone.uuid],
+      values: {
+        ...uciAC[zone.uuid].values,
+        fan_speed: value,
+      },
+      lastModified: new Date().toISOString(),
+    }
+
+    dispatch(editTopic({
+      fileName: 'ac',
+      sectionName: 'controls',
+      uuid: zone.uuid,
+      data: updatedEntry,
+    }))
+
+    // Fire and forget
+    updateUCIEntry({
+      uuid: zone.uuid,
+      sectionType: 'controls',
+      sectionName: zone.id,
+      fileName: 'ac',
+      values: {
+        enabled: zone.enabled ? 1 : 0,
+        target_temp: zone.targetTemp,
+        fan_speed: value,
+        mode: zone.mode,
+      },
+      lastModified: new Date().toISOString(),
+    }).catch((error) => {
+      console.error('Failed to update AC fan speed:', error)
+    })
   }
 
-  const handleToggle = (id: string) => {
-    setZones(prev => prev.map(zone => 
-      zone.id === id ? { ...zone, enabled: !zone.enabled } : zone
-    ))
+  const handleToggle = async (id: string) => {
+    const zone = zones.find((z) => z.id === id)
+    if (!zone) return
+
+    // Update local UCI state first
+    const updatedEntry = {
+      ...uciAC[zone.uuid],
+      values: {
+        ...uciAC[zone.uuid].values,
+        enabled: zone.enabled ? 0 : 1,
+      },
+      lastModified: new Date().toISOString(),
+    }
+
+    dispatch(editTopic({
+      fileName: 'ac',
+      sectionName: 'controls',
+      uuid: zone.uuid,
+      data: updatedEntry,
+    }))
+
+    // Fire and forget
+    updateUCIEntry({
+      uuid: zone.uuid,
+      sectionType: 'controls',
+      sectionName: zone.id,
+      fileName: 'ac',
+      values: {
+        enabled: zone.enabled ? 0 : 1,
+        target_temp: zone.targetTemp,
+        fan_speed: zone.fanSpeed,
+        mode: zone.mode,
+      },
+      lastModified: new Date().toISOString(),
+    }).catch((error) => {
+      console.error('Failed to toggle AC:', error)
+    })
   }
 
-  const handleModeChange = (id: string, mode: 'cool' | 'heat' | 'auto') => {
-    setZones(prev => prev.map(zone => 
-      zone.id === id ? { ...zone, mode } : zone
-    ))
+  const handleModeChange = async (id: string, mode: 'cool' | 'heat' | 'auto') => {
+    const zone = zones.find((z) => z.id === id)
+    if (!zone) return
+
+    // Update local UCI state first
+    const updatedEntry = {
+      ...uciAC[zone.uuid],
+      values: {
+        ...uciAC[zone.uuid].values,
+        mode: mode,
+      },
+      lastModified: new Date().toISOString(),
+    }
+
+    dispatch(editTopic({
+      fileName: 'ac',
+      sectionName: 'controls',
+      uuid: zone.uuid,
+      data: updatedEntry,
+    }))
+
+    // Fire and forget
+    updateUCIEntry({
+      uuid: zone.uuid,
+      sectionType: 'controls',
+      sectionName: zone.id,
+      fileName: 'ac',
+      values: {
+        enabled: zone.enabled ? 1 : 0,
+        target_temp: zone.targetTemp,
+        fan_speed: zone.fanSpeed,
+        mode: mode,
+      },
+      lastModified: new Date().toISOString(),
+    }).catch((error) => {
+      console.error('Failed to update AC mode:', error)
+    })
   }
 
   const getModeIcon = (mode: string) => {
@@ -76,6 +246,20 @@ function AC() {
       case 'heat': return 'error.main'
       default: return 'warning.main'
     }
+  }
+
+  // Show loading or empty state when no data
+  if (!uciAC) {
+    return (
+      <Box sx={{ p: 3, textAlign: 'center' }}>
+        <Typography variant="h4" gutterBottom sx={{ mb: 3 }}>
+          Air Conditioning
+        </Typography>
+        <Typography variant="body1" color="text.secondary">
+          Loading AC controls...
+        </Typography>
+      </Box>
+    )
   }
 
   return (
@@ -112,7 +296,7 @@ function AC() {
                       <Switch
                         checked={zone.enabled}
                         onChange={() => handleToggle(zone.id)}
-                        disabled={!masterEnabled}
+                        disabled={!masterEnabled || isUpdating}
                       />
                     }
                     label=""
@@ -142,7 +326,7 @@ function AC() {
                 <Slider
                   value={zone.targetTemp}
                   onChange={(_, value) => handleTargetTempChange(zone.id, value as number)}
-                  disabled={!zone.enabled || !masterEnabled}
+                  disabled={!zone.enabled || !masterEnabled || isUpdating}
                   min={10}
                   max={30}
                   step={1}
@@ -160,7 +344,7 @@ function AC() {
                 <Slider
                   value={zone.fanSpeed}
                   onChange={(_, value) => handleFanSpeedChange(zone.id, value as number)}
-                  disabled={!zone.enabled || !masterEnabled}
+                  disabled={!zone.enabled || !masterEnabled || isUpdating}
                   min={1}
                   max={5}
                   step={1}
@@ -179,7 +363,7 @@ function AC() {
                   value={zone.mode}
                   exclusive
                   onChange={(_, newMode) => newMode && handleModeChange(zone.id, newMode)}
-                  disabled={!zone.enabled || !masterEnabled}
+                  disabled={!zone.enabled || !masterEnabled || isUpdating}
                   size="small"
                   fullWidth
                 >
@@ -202,7 +386,7 @@ function AC() {
         ))}
       </Grid>
       
-      <Paper sx={{ mt: 4, p: 2, bgcolor: 'background.paper' }}>
+      <Paper sx={{ mt: 4, p: 2, bgcolor: 'background.default' }}>
         <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
           <AirIcon sx={{ mr: 2 }} />
           <Typography variant="h6">

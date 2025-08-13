@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Login, AccountCircle, Logout, Settings, Person } from '@mui/icons-material'
+import { Login, AccountCircle, Logout } from '@mui/icons-material'
 import { 
   IconButton, 
   Tooltip, 
