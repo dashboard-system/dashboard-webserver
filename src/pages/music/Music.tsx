@@ -8,6 +8,7 @@ import {
   Slider,
   List,
   ListItem,
+  ListItemButton,
   ListItemText,
   ListItemSecondaryAction,
   LinearProgress,
@@ -62,15 +63,18 @@ function Music() {
   const playlist = useMemo(() => {
     if (!uciMusic) return []
 
-    return Object.values(uciMusic).map((entry: UCIMusicEntry) => ({
-      id: entry.values.id,
-      title: entry.values.title.replace(/'/g, ''), // Remove quotes
-      artist: entry.values.artist.replace(/'/g, ''),
-      album: entry.values.album.replace(/'/g, ''),
-      duration: entry.values.duration,
-      cover: entry.values.cover,
-      src: entry.values.src,
-    }))
+    return Object.values(uciMusic).map((entry) => {
+      const typedEntry = entry as UCIMusicEntry
+      return {
+        id: typedEntry.values.id,
+        title: typedEntry.values.title.replace(/'/g, ''), // Remove quotes
+        artist: typedEntry.values.artist.replace(/'/g, ''),
+        album: typedEntry.values.album.replace(/'/g, ''),
+        duration: typedEntry.values.duration,
+        cover: typedEntry.values.cover,
+        src: typedEntry.values.src,
+      }
+    })
   }, [uciMusic])
 
   const [currentSong, setCurrentSong] = useState(0)
@@ -331,29 +335,34 @@ function Music() {
               {playlist.map((song, index) => (
                 <ListItem 
                   key={song.id}
-                  button
-                  onClick={() => handleSongSelect(index)}
-                  selected={index === currentSong}
                   divider
                   sx={{
                     borderRadius: 1,
                     mb: 1,
-                    ...(index === currentSong && {
-                      bgcolor: 'primary.light',
-                      '&:hover': { bgcolor: 'primary.light' }
-                    })
+                    p: 0
                   }}
                 >
-                  <Avatar sx={{ mr: 2, bgcolor: index === currentSong ? 'primary.main' : 'grey.300' }}>
-                    {song.cover || <MusicNoteIcon />}
-                  </Avatar>
-                  <ListItemText
-                    primary={song.title}
-                    secondary={`${song.artist} • ${formatTime(song.duration)}`}
-                    primaryTypographyProps={{
-                      fontWeight: index === currentSong ? 'bold' : 'normal'
+                  <ListItemButton
+                    onClick={() => handleSongSelect(index)}
+                    selected={index === currentSong}
+                    sx={{
+                      ...(index === currentSong && {
+                        bgcolor: 'primary.light',
+                        '&:hover': { bgcolor: 'primary.light' }
+                      })
                     }}
-                  />
+                  >
+                    <Avatar sx={{ mr: 2, bgcolor: index === currentSong ? 'primary.main' : 'grey.300' }}>
+                      {song.cover || <MusicNoteIcon />}
+                    </Avatar>
+                    <ListItemText
+                      primary={song.title}
+                      secondary={`${song.artist} • ${formatTime(song.duration)}`}
+                      primaryTypographyProps={{
+                        fontWeight: index === currentSong ? 'bold' : 'normal'
+                      }}
+                    />
+                  </ListItemButton>
                   <ListItemSecondaryAction>
                     {index === currentSong && isPlaying && (
                       <IconButton edge="end" onClick={handlePlayPause}>

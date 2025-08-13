@@ -154,19 +154,19 @@ const dashboardComponents = (mode: PaletteMode) => ({
         backgroundColor: mode === 'dark' ? dashboardColors.dark.primary : dashboardColors.light.primary,
         fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
         // Mobile app-like behavior
-        userSelect: 'none',
-        WebkitUserSelect: 'none',
-        MozUserSelect: 'none',
-        msUserSelect: 'none',
+        userSelect: 'none' as const,
+        WebkitUserSelect: 'none' as const,
+        MozUserSelect: 'none' as const,
+        msUserSelect: 'none' as const,
         WebkitTapHighlightColor: 'transparent',
         WebkitTouchCallout: 'none',
       },
       // Ensure labels and text elements are not selectable
       'label, span, p, h1, h2, h3, h4, h5, h6, div': {
-        userSelect: 'none',
-        WebkitUserSelect: 'none',
-        MozUserSelect: 'none',
-        msUserSelect: 'none',
+        userSelect: 'none' as const,
+        WebkitUserSelect: 'none' as const,
+        MozUserSelect: 'none' as const,
+        msUserSelect: 'none' as const,
       },
     },
   },
@@ -328,10 +328,10 @@ const dashboardComponents = (mode: PaletteMode) => ({
         borderRadius: 12,
         fontSize: '12px',
         fontWeight: 600,
-        userSelect: 'none',
-        WebkitUserSelect: 'none',
-        MozUserSelect: 'none',
-        msUserSelect: 'none',
+        userSelect: 'none' as const,
+        WebkitUserSelect: 'none' as const,
+        MozUserSelect: 'none' as const,
+        msUserSelect: 'none' as const,
       },
       colorPrimary: {
         backgroundColor: dashboardColors.blue[500],
@@ -348,10 +348,10 @@ const dashboardComponents = (mode: PaletteMode) => ({
   MuiTypography: {
     styleOverrides: {
       root: {
-        userSelect: 'none',
-        WebkitUserSelect: 'none',
-        MozUserSelect: 'none',
-        msUserSelect: 'none',
+        userSelect: 'none' as const,
+        WebkitUserSelect: 'none' as const,
+        MozUserSelect: 'none' as const,
+        msUserSelect: 'none' as const,
       },
     },
   },
@@ -360,10 +360,10 @@ const dashboardComponents = (mode: PaletteMode) => ({
   MuiFormLabel: {
     styleOverrides: {
       root: {
-        userSelect: 'none',
-        WebkitUserSelect: 'none',
-        MozUserSelect: 'none',
-        msUserSelect: 'none',
+        userSelect: 'none' as const,
+        WebkitUserSelect: 'none' as const,
+        MozUserSelect: 'none' as const,
+        msUserSelect: 'none' as const,
       },
     },
   },
@@ -371,10 +371,10 @@ const dashboardComponents = (mode: PaletteMode) => ({
   MuiFormControlLabel: {
     styleOverrides: {
       label: {
-        userSelect: 'none',
-        WebkitUserSelect: 'none',
-        MozUserSelect: 'none',
-        msUserSelect: 'none',
+        userSelect: 'none' as const,
+        WebkitUserSelect: 'none' as const,
+        MozUserSelect: 'none' as const,
+        msUserSelect: 'none' as const,
       },
     },
   },
@@ -384,10 +384,10 @@ const dashboardComponents = (mode: PaletteMode) => ({
     styleOverrides: {
       root: {
         '& .MuiInputBase-input': {
-          userSelect: 'text !important',
-          WebkitUserSelect: 'text !important',
-          MozUserSelect: 'text !important',
-          msUserSelect: 'text !important',
+          userSelect: 'text' as const,
+          WebkitUserSelect: 'text' as const,
+          MozUserSelect: 'text' as const,
+          msUserSelect: 'text' as const,
         },
       },
     },
@@ -396,10 +396,10 @@ const dashboardComponents = (mode: PaletteMode) => ({
   MuiInputBase: {
     styleOverrides: {
       input: {
-        userSelect: 'text !important',
-        WebkitUserSelect: 'text !important',
-        MozUserSelect: 'text !important',
-        msUserSelect: 'text !important',
+        userSelect: 'text' as const,
+        WebkitUserSelect: 'text' as const,
+        MozUserSelect: 'text' as const,
+        msUserSelect: 'text' as const,
       },
     },
   },
@@ -407,10 +407,10 @@ const dashboardComponents = (mode: PaletteMode) => ({
   MuiOutlinedInput: {
     styleOverrides: {
       input: {
-        userSelect: 'text !important',
-        WebkitUserSelect: 'text !important',
-        MozUserSelect: 'text !important',
-        msUserSelect: 'text !important',
+        userSelect: 'text' as const,
+        WebkitUserSelect: 'text' as const,
+        MozUserSelect: 'text' as const,
+        msUserSelect: 'text' as const,
       },
     },
   },
@@ -442,26 +442,26 @@ const dashboardComponents = (mode: PaletteMode) => ({
   MuiListItemText: {
     styleOverrides: {
       root: {
-        userSelect: 'none',
-        WebkitUserSelect: 'none',
-        MozUserSelect: 'none',
-        msUserSelect: 'none',
+        userSelect: 'none' as const,
+        WebkitUserSelect: 'none' as const,
+        MozUserSelect: 'none' as const,
+        msUserSelect: 'none' as const,
       },
       primary: {
         color: mode === 'dark' ? dashboardColors.text.primary : dashboardColors.text.darkPrimary,
         fontWeight: 500,
         fontSize: '14px',
-        userSelect: 'none',
-        WebkitUserSelect: 'none',
-        MozUserSelect: 'none',
-        msUserSelect: 'none',
+        userSelect: 'none' as const,
+        WebkitUserSelect: 'none' as const,
+        MozUserSelect: 'none' as const,
+        msUserSelect: 'none' as const,
       },
       secondary: {
         color: mode === 'dark' ? dashboardColors.text.secondary : dashboardColors.text.darkSecondary,
-        userSelect: 'none',
-        WebkitUserSelect: 'none',
-        MozUserSelect: 'none',
-        msUserSelect: 'none',
+        userSelect: 'none' as const,
+        WebkitUserSelect: 'none' as const,
+        MozUserSelect: 'none' as const,
+        msUserSelect: 'none' as const,
       },
     },
   },

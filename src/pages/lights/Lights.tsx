@@ -37,13 +37,16 @@ function Lights() {
       reading: 'Reading Lights',
     }
 
-    return Object.values(uciLights).map((entry: UCILightEntry) => ({
-      id: entry.sectionName,
-      name: lightNameMap[entry.sectionName] || entry.sectionName,
-      brightness: entry.values.brightness,
-      enabled: entry.values.enabled === 1,
-      uuid: entry.uuid,
-    }))
+    return Object.values(uciLights).map((entry) => {
+      const typedEntry = entry as UCILightEntry
+      return {
+        id: typedEntry.sectionName,
+        name: lightNameMap[typedEntry.sectionName] || typedEntry.sectionName,
+        brightness: typedEntry.values.brightness,
+        enabled: typedEntry.values.enabled === 1,
+        uuid: typedEntry.uuid,
+      }
+    })
   }, [uciLights])
 
   const handleBrightnessChange = async (id: string, value: number) => {
@@ -76,8 +79,8 @@ function Lights() {
       sectionName: light.id,
       fileName: 'lights',
       values: {
-        enabled: light.enabled ? 1 : 0,
-        brightness: value,
+        enabled: { value: light.enabled ? 1 : 0 },
+        brightness: { value },
       },
       lastModified: new Date().toISOString(),
     }).catch((error) => {
@@ -115,8 +118,8 @@ function Lights() {
       sectionName: light.id,
       fileName: 'lights',
       values: {
-        enabled: light.enabled ? 0 : 1,
-        brightness: light.brightness,
+        enabled: { value: light.enabled ? 0 : 1 },
+        brightness: { value: light.brightness },
       },
       lastModified: new Date().toISOString(),
     }).catch((error) => {
@@ -146,7 +149,7 @@ function Lights() {
 
       <Grid container spacing={3}>
         {lights.map((light) => (
-          <Grid item xs={12} md={6} key={light.id}>
+          <Grid size={{ xs: 12, md: 6 }} key={light.id}>
             <LightCard
               light={light}
               isUpdating={isUpdating}

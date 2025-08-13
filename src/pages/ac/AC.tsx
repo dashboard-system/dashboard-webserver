@@ -62,16 +62,19 @@ function AC() {
       cargo: 'Cargo Hold',
     }
 
-    return Object.values(uciAC).map((entry: UCIACEntry) => ({
-      id: entry.sectionName,
-      name: zoneNameMap[entry.sectionName] || entry.sectionName,
-      temperature: entry.values.target_temp + 1, // Mock current temp
-      targetTemp: entry.values.target_temp,
-      enabled: entry.values.enabled === 1,
-      mode: entry.values.mode as 'cool' | 'heat' | 'auto',
-      fanSpeed: entry.values.fan_speed,
-      uuid: entry.uuid,
-    }))
+    return Object.values(uciAC).map((entry) => {
+      const typedEntry = entry as UCIACEntry
+      return {
+        id: typedEntry.sectionName,
+        name: zoneNameMap[typedEntry.sectionName] || typedEntry.sectionName,
+        temperature: typedEntry.values.target_temp + 1, // Mock current temp
+        targetTemp: typedEntry.values.target_temp,
+        enabled: typedEntry.values.enabled === 1,
+        mode: typedEntry.values.mode as 'cool' | 'heat' | 'auto',
+        fanSpeed: typedEntry.values.fan_speed,
+        uuid: typedEntry.uuid,
+      }
+    })
   }, [uciAC])
 
   const [masterEnabled, setMasterEnabled] = useState(true)
@@ -104,10 +107,10 @@ function AC() {
       sectionName: zone.id,
       fileName: 'ac',
       values: {
-        enabled: zone.enabled ? 1 : 0,
-        target_temp: value,
-        fan_speed: zone.fanSpeed,
-        mode: zone.mode,
+        enabled: { value: zone.enabled ? 1 : 0 },
+        target_temp: { value },
+        fan_speed: { value: zone.fanSpeed },
+        mode: { value: zone.mode },
       },
       lastModified: new Date().toISOString(),
     }).catch((error) => {
@@ -143,10 +146,10 @@ function AC() {
       sectionName: zone.id,
       fileName: 'ac',
       values: {
-        enabled: zone.enabled ? 1 : 0,
-        target_temp: zone.targetTemp,
-        fan_speed: value,
-        mode: zone.mode,
+        enabled: { value: zone.enabled ? 1 : 0 },
+        target_temp: { value: zone.targetTemp },
+        fan_speed: { value },
+        mode: { value: zone.mode },
       },
       lastModified: new Date().toISOString(),
     }).catch((error) => {
@@ -182,10 +185,10 @@ function AC() {
       sectionName: zone.id,
       fileName: 'ac',
       values: {
-        enabled: zone.enabled ? 0 : 1,
-        target_temp: zone.targetTemp,
-        fan_speed: zone.fanSpeed,
-        mode: zone.mode,
+        enabled: { value: zone.enabled ? 0 : 1 },
+        target_temp: { value: zone.targetTemp },
+        fan_speed: { value: zone.fanSpeed },
+        mode: { value: zone.mode },
       },
       lastModified: new Date().toISOString(),
     }).catch((error) => {
@@ -221,10 +224,10 @@ function AC() {
       sectionName: zone.id,
       fileName: 'ac',
       values: {
-        enabled: zone.enabled ? 1 : 0,
-        target_temp: zone.targetTemp,
-        fan_speed: zone.fanSpeed,
-        mode: mode,
+        enabled: { value: zone.enabled ? 1 : 0 },
+        target_temp: { value: zone.targetTemp },
+        fan_speed: { value: zone.fanSpeed },
+        mode: { value: mode },
       },
       lastModified: new Date().toISOString(),
     }).catch((error) => {
@@ -283,7 +286,7 @@ function AC() {
       
       <Grid container spacing={3}>
         {zones.map((zone) => (
-          <Grid item xs={12} lg={4} key={zone.id}>
+          <Grid size={{ xs: 12, lg: 4 }} key={zone.id}>
             <Card elevation={2} sx={{ opacity: !masterEnabled ? 0.6 : 1 }}>
               <CardContent>
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
@@ -394,22 +397,22 @@ function AC() {
           </Typography>
         </Box>
         <Grid container spacing={2}>
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             <Typography variant="body2" color="text.secondary">
               Active Zones: {zones.filter(z => z.enabled && masterEnabled).length} / {zones.length}
             </Typography>
           </Grid>
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             <Typography variant="body2" color="text.secondary">
               Avg Temperature: {Math.round(zones.reduce((acc, zone) => acc + zone.temperature, 0) / zones.length)}°C
             </Typography>
           </Grid>
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             <Typography variant="body2" color="text.secondary">
               Power Status: {masterEnabled ? 'ON' : 'OFF'}
             </Typography>
           </Grid>
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             <Typography variant="body2" color="text.secondary">
               Total Fan Speed: {zones.reduce((acc, zone) => acc + (zone.enabled ? zone.fanSpeed : 0), 0)}
             </Typography>
