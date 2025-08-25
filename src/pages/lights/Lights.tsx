@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { Box, Typography, Grid } from '@mui/material'
+import { Box, Typography } from '@mui/material'
 import { useAppSelector, useAppDispatch } from '../../store/hook'
 import { useUpdateUCIEntryMutation } from '../../store/slices/uci/uci-api-slice'
 import { editTopic } from '../../store/slices/uci/uci-slice'
@@ -37,7 +37,7 @@ function Lights() {
       reading: 'Reading Lights',
     }
 
-    return Object.values(uciLights).map((entry: UCILightEntry) => ({
+    return (Object.values(uciLights) as UCILightEntry[]).map((entry) => ({
       id: entry.sectionName,
       name: lightNameMap[entry.sectionName] || entry.sectionName,
       brightness: entry.values.brightness,
@@ -144,18 +144,18 @@ function Lights() {
         Lighting Controls
       </Typography>
 
-      <Grid container spacing={3}>
+      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
         {lights.map((light) => (
-          <Grid item xs={12} md={6} key={light.id}>
+          <Box key={light.id} sx={{ flex: { xs: '1 1 100%', md: '1 1 calc(50% - 12px)' }, minWidth: 0 }}>
             <LightCard
               light={light}
               isUpdating={isUpdating}
               onToggle={handleToggle}
               onBrightnessChange={handleBrightnessChange}
             />
-          </Grid>
+          </Box>
         ))}
-      </Grid>
+      </Box>
 
       <LightSystemStatus lights={lights} />
     </Box>

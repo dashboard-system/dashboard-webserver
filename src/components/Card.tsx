@@ -1,11 +1,11 @@
 import type { ReactNode } from 'react'
 import type { CardProps, SxProps, Theme } from '@mui/material'
-import { Card, CardHeader, CardContent, CardActions, Box, Divider } from '@mui/material'
+import { Card, CardHeader, CardContent, CardActions, Divider } from '@mui/material'
 
 export type CardVariant = 'default' | 'table' | 'list' | 'graph' | 'stats'
 export type CardSize = 'small' | 'medium' | 'large'
 
-type Props = CardProps & {
+interface Props extends Omit<CardProps, 'variant'> {
   title?: string
   subheader?: string
   variant?: CardVariant
@@ -85,8 +85,8 @@ const getSizeStyles = (size: CardSize): SxProps<Theme> => {
 export default function PageCard({
   title,
   subheader,
-  variant = 'default',
-  size = 'medium',
+  variant = 'default' as CardVariant,
+  size = 'medium' as CardSize,
   showDivider = false,
   headerAction,
   footerActions,
@@ -99,12 +99,12 @@ export default function PageCard({
   const variantStyles = getVariantStyles(variant)
   const sizeStyles = getSizeStyles(size)
 
-  const combinedSx: SxProps<Theme> = {
+  const combinedSx = {
     ...sizeStyles,
     ...variantStyles,
     ...(minHeight && { minHeight }),
     ...sx
-  }
+  } as SxProps<Theme>
 
   return (
     <Card 

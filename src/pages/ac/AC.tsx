@@ -7,7 +7,6 @@ import {
   Slider,
   Switch,
   FormControlLabel,
-  Grid,
   Paper,
   Divider,
   ToggleButton,
@@ -21,17 +20,6 @@ import LocalFireDepartmentIcon from '@mui/icons-material/LocalFireDepartment'
 import { useAppSelector, useAppDispatch } from '../../store/hook'
 import { useUpdateUCIEntryMutation } from '../../store/slices/uci/uci-api-slice'
 import { editTopic } from '../../store/slices/uci/uci-slice'
-
-interface ACZone {
-  id: string
-  name: string
-  temperature: number
-  targetTemp: number
-  enabled: boolean
-  mode: 'cool' | 'heat' | 'auto'
-  fanSpeed: number
-  uuid: string
-}
 
 interface UCIACEntry {
   uuid: string
@@ -62,7 +50,7 @@ function AC() {
       cargo: 'Cargo Hold',
     }
 
-    return Object.values(uciAC).map((entry: UCIACEntry) => ({
+    return (Object.values(uciAC) as UCIACEntry[]).map((entry) => ({
       id: entry.sectionName,
       name: zoneNameMap[entry.sectionName] || entry.sectionName,
       temperature: entry.values.target_temp + 1, // Mock current temp
@@ -281,9 +269,9 @@ function AC() {
         />
       </Box>
       
-      <Grid container spacing={3}>
+      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
         {zones.map((zone) => (
-          <Grid item xs={12} lg={4} key={zone.id}>
+          <Box key={zone.id} sx={{ flex: { xs: '1 1 100%', lg: '1 1 calc(33.333% - 16px)' }, minWidth: 0 }}>
             <Card elevation={2} sx={{ opacity: !masterEnabled ? 0.6 : 1 }}>
               <CardContent>
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
@@ -382,9 +370,9 @@ function AC() {
                 </ToggleButtonGroup>
               </CardContent>
             </Card>
-          </Grid>
+          </Box>
         ))}
-      </Grid>
+      </Box>
       
       <Paper sx={{ mt: 4, p: 2, bgcolor: 'background.default' }}>
         <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
@@ -393,28 +381,28 @@ function AC() {
             System Status
           </Typography>
         </Box>
-        <Grid container spacing={2}>
-          <Grid item xs={12} sm={6} md={3}>
+        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
+          <Box sx={{ flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 8px)', md: '1 1 calc(25% - 12px)' }, minWidth: 0 }}>
             <Typography variant="body2" color="text.secondary">
               Active Zones: {zones.filter(z => z.enabled && masterEnabled).length} / {zones.length}
             </Typography>
-          </Grid>
-          <Grid item xs={12} sm={6} md={3}>
+          </Box>
+          <Box sx={{ flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 8px)', md: '1 1 calc(25% - 12px)' }, minWidth: 0 }}>
             <Typography variant="body2" color="text.secondary">
               Avg Temperature: {Math.round(zones.reduce((acc, zone) => acc + zone.temperature, 0) / zones.length)}°C
             </Typography>
-          </Grid>
-          <Grid item xs={12} sm={6} md={3}>
+          </Box>
+          <Box sx={{ flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 8px)', md: '1 1 calc(25% - 12px)' }, minWidth: 0 }}>
             <Typography variant="body2" color="text.secondary">
               Power Status: {masterEnabled ? 'ON' : 'OFF'}
             </Typography>
-          </Grid>
-          <Grid item xs={12} sm={6} md={3}>
+          </Box>
+          <Box sx={{ flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 8px)', md: '1 1 calc(25% - 12px)' }, minWidth: 0 }}>
             <Typography variant="body2" color="text.secondary">
               Total Fan Speed: {zones.reduce((acc, zone) => acc + (zone.enabled ? zone.fanSpeed : 0), 0)}
             </Typography>
-          </Grid>
-        </Grid>
+          </Box>
+        </Box>
       </Paper>
     </Box>
   )

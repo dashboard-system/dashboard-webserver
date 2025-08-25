@@ -62,7 +62,7 @@ function Music() {
   const playlist = useMemo(() => {
     if (!uciMusic) return []
 
-    return Object.values(uciMusic).map((entry: UCIMusicEntry) => ({
+    return (Object.values(uciMusic) as UCIMusicEntry[]).map((entry) => ({
       id: entry.values.id,
       title: entry.values.title.replace(/'/g, ''), // Remove quotes
       artist: entry.values.artist.replace(/'/g, ''),
@@ -331,13 +331,12 @@ function Music() {
               {playlist.map((song, index) => (
                 <ListItem 
                   key={song.id}
-                  button
                   onClick={() => handleSongSelect(index)}
-                  selected={index === currentSong}
                   divider
                   sx={{
                     borderRadius: 1,
                     mb: 1,
+                    cursor: 'pointer',
                     ...(index === currentSong && {
                       bgcolor: 'primary.light',
                       '&:hover': { bgcolor: 'primary.light' }

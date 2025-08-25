@@ -64,7 +64,7 @@ export function CustomThemeProvider({ children }: ThemeProviderProps) {
   }, [actualMode])
 
   const contextValue = useMemo(() => ({
-    currentMode: actualMode,
+    currentMode: actualMode as 'light' | 'dark',
     themeMode: themeMode,
   }), [actualMode, themeMode])
 
