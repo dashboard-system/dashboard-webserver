@@ -2,3 +2,6 @@
 	path = ui
 	url = https://github.com/dashboard-system/dashboard-ui.git
 	branch = main
+[submodule "dashboard-ui"]
+	path = dashboard-ui
+	url = https://github.com/dashboard-system/dashboard-ui.git
