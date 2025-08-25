@@ -134,7 +134,7 @@ router.post('/register', async (req: Request, res: Response): Promise<void> => {
 router.get(
   '/me',
   authenticateToken,
-  (req: AuthRequest, res: Response): void => {
+  async (req: AuthRequest, res: Response): Promise<void> => {
     try {
       if (!req.user) {
         res.status(401).json({
@@ -144,7 +144,7 @@ router.get(
       }
 
       // Get full user data from database
-      const user = userModel.getUserById(req.user.id)
+      const user = await userModel.getUserById(req.user.id)
       if (!user) {
         res.status(404).json({
           error: 'User not found',
@@ -157,8 +157,8 @@ router.get(
           id: user.id,
           username: user.username,
           role: user.role,
-          created_at: user.created_at,
-          updated_at: user.updated_at,
+          createdAt: user.createdAt,
+          updatedAt: user.updatedAt,
         },
       })
     } catch (error) {
@@ -174,7 +174,7 @@ router.get(
 router.post(
   '/refresh',
   authenticateToken,
-  (req: AuthRequest, res: Response): void => {
+  async (req: AuthRequest, res: Response): Promise<void> => {
     try {
       if (!req.user) {
         res.status(401).json({
@@ -184,7 +184,7 @@ router.post(
       }
 
       // Verify user still exists in database
-      const user = userModel.getUserById(req.user.id)
+      const user = await userModel.getUserById(req.user.id)
       if (!user) {
         res.status(404).json({
           error: 'User no longer exists',
@@ -263,7 +263,7 @@ router.put(
           id: updatedUser.id,
           username: updatedUser.username,
           role: updatedUser.role,
-          updated_at: updatedUser.updated_at,
+          updatedAt: updatedUser.updatedAt,
         },
       })
     } catch (error: any) {

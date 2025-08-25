@@ -1,6 +1,9 @@
+import { drizzle } from 'drizzle-orm/better-sqlite3'
 import Database from 'better-sqlite3'
 import path from 'path'
 import fs from 'fs'
+import * as schema from './schema'
+import { sql } from 'drizzle-orm'
 
 interface DatabaseConfig {
   filename: string
@@ -12,7 +15,8 @@ interface DatabaseConfig {
 
 class DatabaseManager {
   private static instance: DatabaseManager
-  private db!: Database.Database // Using definite assignment assertion
+  private sqlite!: Database.Database
+  private db!: ReturnType<typeof drizzle<typeof schema>>
   private config: DatabaseConfig
 
   private constructor() {
@@ -40,13 +44,14 @@ class DatabaseManager {
         fs.mkdirSync(dbDir, { recursive: true })
       }
 
-      this.db = new Database(this.config.filename, this.config)
+      this.sqlite = new Database(this.config.filename, this.config)
+      this.db = drizzle(this.sqlite, { schema })
 
       // Enable WAL mode for better concurrency
-      this.db.pragma('journal_mode = WAL')
-      this.db.pragma('synchronous = NORMAL')
-      this.db.pragma('cache_size = 1000000')
-      this.db.pragma('temp_store = memory')
+      this.sqlite.pragma('journal_mode = WAL')
+      this.sqlite.pragma('synchronous = NORMAL')
+      this.sqlite.pragma('cache_size = 1000000')
+      this.sqlite.pragma('temp_store = memory')
 
       console.log('✅ Database connected:', this.config.filename)
       this.initializeSchema()
@@ -58,14 +63,15 @@ class DatabaseManager {
 
   private initializeSchema(): void {
     try {
-      // Create your tables here
-      this.db.exec(`
+      // Create tables using raw SQL for initial setup
+      this.sqlite.exec(`
         CREATE TABLE IF NOT EXISTS users (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
           username TEXT UNIQUE NOT NULL,
-          password_hash TEXT NOT NULL,
-          created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-          updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+          password TEXT NOT NULL,
+          role TEXT NOT NULL DEFAULT 'user',
+          created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
         );
 
         CREATE TABLE IF NOT EXISTS dashboard_data (
@@ -73,7 +79,7 @@ class DatabaseManager {
           user_id INTEGER,
           data_type TEXT NOT NULL,
           value TEXT NOT NULL,
-          timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+          timestamp TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
           FOREIGN KEY (user_id) REFERENCES users(id)
         );
 
@@ -90,8 +96,12 @@ class DatabaseManager {
     }
   }
 
-  public getDatabase(): Database.Database {
+  public getDatabase(): ReturnType<typeof drizzle<typeof schema>> {
     return this.db
+  }
+
+  public getSqliteDatabase(): Database.Database {
+    return this.sqlite
   }
 
   // Health check method
@@ -102,10 +112,10 @@ class DatabaseManager {
   }> {
     try {
       // Simple query to verify connection
-      const result = this.db.prepare('SELECT 1 as test').get()
+      this.db.select({ test: sql<number>`1` })
 
       // Additional health metrics
-      const tableCount = this.db
+      const tableCount = this.sqlite
         .prepare(
           `
         SELECT COUNT(*) as count 
@@ -121,8 +131,8 @@ class DatabaseManager {
         details: {
           tables: tableCount.count,
           filename: this.config.filename,
-          mode: this.db.pragma('journal_mode', { simple: true }),
-          cache_size: this.db.pragma('cache_size', { simple: true }),
+          mode: this.sqlite.pragma('journal_mode', { simple: true }),
+          cache_size: this.sqlite.pragma('cache_size', { simple: true }),
         },
       }
     } catch (error) {
@@ -139,8 +149,8 @@ class DatabaseManager {
 
   // Graceful shutdown
   public close(): void {
-    if (this.db) {
-      this.db.close()
+    if (this.sqlite) {
+      this.sqlite.close()
       console.log('📀 Database connection closed')
     }
   }

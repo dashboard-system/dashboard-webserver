@@ -1,104 +1,110 @@
 // src/routes/users.ts
 import { Router, Response } from 'express'
 import { authenticateToken, requireRole } from '../middleware/auth'
-import { AuthRequest, User } from '../shared/types/auth'
+import { AuthRequest } from '../shared/types/auth'
+import { UserModel } from '../shared/models/user'
 
 const router = Router()
+const userModel = new UserModel()
 
 // Apply authentication to all user routes
 router.use(authenticateToken)
-
-// Mock data
-let users: User[] = [
-  {
-    id: 1,
-    username: 'John Doe',
-    role: 'user',
-    updated_at: '2024-01-02T00:00:00Z',
-    created_at: '2024-01-01T00:00:00Z',
-  },
-  {
-    id: 2,
-    username: 'Jane Smith',
-    role: 'user',
-    updated_at: '2024-01-02T00:00:00Z',
-    created_at: '2024-01-02T00:00:00Z',
-  },
-  {
-    id: 3,
-    username: 'Bob Johnson',
-    role: 'admin',
-    updated_at: '2024-01-02T00:00:00Z',
-    created_at: '2024-01-03T00:00:00Z',
-  },
-]
 
 // GET /api/users - Get all users (admin only)
 router.get(
   '/',
   requireRole(['admin']),
-  (req: AuthRequest, res: Response): void => {
-    const { page = '1', limit = '10', search } = req.query
-    const pageNum = parseInt(page as string)
-    const limitNum = parseInt(limit as string)
+  async (req: AuthRequest, res: Response): Promise<void> => {
+    try {
+      const { page = '1', limit = '10', search } = req.query
+      const pageNum = parseInt(page as string)
+      const limitNum = parseInt(limit as string)
 
-    let filteredUsers = users
-
-    if (search) {
-      filteredUsers = users.filter((user) =>
-        user.username.toLowerCase().includes((search as string).toLowerCase()),
+      const { users, total } = await userModel.getAllUsers(
+        pageNum,
+        limitNum,
+        search as string
       )
+
+      res.json({
+        users,
+        pagination: {
+          page: pageNum,
+          limit: limitNum,
+          total,
+          totalPages: Math.ceil(total / limitNum),
+        },
+      })
+    } catch (error) {
+      console.error('Get users error:', error)
+      res.status(500).json({
+        error: 'Internal server error',
+      })
     }
-
-    const startIndex = (pageNum - 1) * limitNum
-    const endIndex = startIndex + limitNum
-    const paginatedUsers = filteredUsers.slice(startIndex, endIndex)
-
-    res.json({
-      users: paginatedUsers,
-      pagination: {
-        page: pageNum,
-        limit: limitNum,
-        total: filteredUsers.length,
-        totalPages: Math.ceil(filteredUsers.length / limitNum),
-      },
-    })
   },
 )
 
 // GET /api/users/profile - Get own profile
-router.get('/profile', (req: AuthRequest, res: Response): void => {
-  const user = users.find((u) => u.id === req.user!.id)
+router.get('/profile', async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    if (!req.user) {
+      res.status(401).json({
+        error: 'User not found in token',
+      })
+      return
+    }
 
-  if (!user) {
-    res.status(404).json({
-      error: 'User not found',
+    const user = await userModel.getUserById(req.user.id)
+
+    if (!user) {
+      res.status(404).json({
+        error: 'User not found',
+      })
+      return
+    }
+
+    res.json(user)
+  } catch (error) {
+    console.error('Get profile error:', error)
+    res.status(500).json({
+      error: 'Internal server error',
     })
-    return
   }
-
-  res.json(user)
 })
 
 // GET /api/users/:id - Get user by ID (admin only)
 router.get(
   '/:id',
   requireRole(['admin']),
-  (req: AuthRequest, res: Response): void => {
-    const { id } = req.params
-    const userId = parseInt(id)
+  async (req: AuthRequest, res: Response): Promise<void> => {
+    try {
+      const { id } = req.params
+      const userId = parseInt(id)
 
-    const user = users.find((u) => u.id === userId)
+      if (isNaN(userId)) {
+        res.status(400).json({
+          error: 'Invalid user ID',
+        })
+        return
+      }
 
-    if (!user) {
-      res.status(404).json({
-        error: 'User not found',
-        id: userId,
+      const user = await userModel.getUserById(userId)
+
+      if (!user) {
+        res.status(404).json({
+          error: 'User not found',
+          id: userId,
+        })
+        return
+      }
+
+      res.json(user)
+    } catch (error) {
+      console.error('Get user by ID error:', error)
+      res.status(500).json({
+        error: 'Internal server error',
       })
-      return
     }
-
-    res.json(user)
   },
 )
 

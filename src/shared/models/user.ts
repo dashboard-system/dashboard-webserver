@@ -1,14 +1,8 @@
-import Database from 'better-sqlite3'
 import DatabaseManager from '../../data/database'
 import { PasswordUtils } from '../../utils/password'
-
-export interface User {
-  id: number
-  username: string
-  role: 'engineer' | 'maintainer' | 'admin' | 'user'
-  created_at: string
-  updated_at: string
-}
+import { users } from '../../data/schema'
+import { eq, like, count, desc } from 'drizzle-orm'
+import type { User, NewUser } from '../../data/schema'
 
 export interface UserWithPassword extends User {
   password: string
@@ -17,17 +11,17 @@ export interface UserWithPassword extends User {
 export interface CreateUserData {
   username: string
   password: string
-  role?: string
+  role?: 'engineer' | 'maintainer' | 'admin' | 'user'
 }
 
 export interface UpdateUserData {
   username?: string
   password?: string
-  role?: string
+  role?: 'engineer' | 'maintainer' | 'admin' | 'user'
 }
 
 export class UserModel {
-  private db: Database.Database
+  private db
 
   constructor() {
     this.db = DatabaseManager.getInstance().getDatabase()
@@ -40,16 +34,19 @@ export class UserModel {
     // Hash the password
     const hashedPassword = await PasswordUtils.hashPassword(password)
 
-    const stmt = this.db.prepare(`
-      INSERT INTO users (username, password, role)
-      VALUES (?, ?, ?)
-    `)
-
     try {
-      const result = stmt.run(username, hashedPassword, role)
-      return this.getUserById(result.lastInsertRowid as number)!
+      const [newUser] = await this.db
+        .insert(users)
+        .values({
+          username,
+          password: hashedPassword,
+          role,
+        })
+        .returning()
+      
+      return newUser
     } catch (error: any) {
-      if (error.code === 'SQLITE_CONSTRAINT_UNIQUE') {
+      if (error.message.includes('UNIQUE constraint failed')) {
         throw new Error('Username already exists')
       }
       throw error
@@ -57,56 +54,70 @@ export class UserModel {
   }
 
   // Get user by ID
-  getUserById(id: number): User | null {
-    const stmt = this.db.prepare(`
-      SELECT id, username, role, created_at, updated_at
-      FROM users WHERE id = ?
-    `)
+  async getUserById(id: number): Promise<User | null> {
+    const result = await this.db
+      .select()
+      .from(users)
+      .where(eq(users.id, id))
+      .limit(1)
 
-    return stmt.get(id) as User | null
+    if (!result[0]) return null
+
+    const { password: _, ...userWithoutPassword } = result[0]
+    return userWithoutPassword as User
   }
 
   // Get user by username
-  getUserByUsername(username: string): UserWithPassword | null {
-    const stmt = this.db.prepare(`
-      SELECT * FROM users WHERE username = ?
-    `)
+  async getUserByUsername(username: string): Promise<UserWithPassword | null> {
+    const result = await this.db
+      .select()
+      .from(users)
+      .where(eq(users.username, username))
+      .limit(1)
 
-    return stmt.get(username) as UserWithPassword | null
+    return result[0] as UserWithPassword || null
   }
 
   // Get all users with pagination
-  getAllUsers(
+  async getAllUsers(
     page: number = 1,
     limit: number = 10,
     search?: string,
-  ): { users: User[]; total: number } {
-    let whereClause = ''
-    let params: any[] = []
-
-    if (search) {
-      whereClause = 'WHERE username LIKE ?'
-      params = [`%${search}%`]
-    }
-
-    // Get total count
-    const countStmt = this.db.prepare(
-      `SELECT COUNT(*) as count FROM users ${whereClause}`,
-    )
-    const { count } = countStmt.get(...params) as { count: number }
-
-    // Get paginated results
+  ): Promise<{ users: User[]; total: number }> {
     const offset = (page - 1) * limit
-    const stmt = this.db.prepare(`
-      SELECT id, username, role, created_at, updated_at
-      FROM users ${whereClause}
-      ORDER BY created_at DESC
-      LIMIT ? OFFSET ?
-    `)
-
-    const users = stmt.all(...params, limit, offset) as User[]
-
-    return { users, total: count }
+    
+    // Get total count and paginated results
+    if (search) {
+      const whereCondition = like(users.username, `%${search}%`)
+      
+      const countResult = await this.db
+        .select({ count: count() })
+        .from(users)
+        .where(whereCondition)
+      
+      const userResults = await this.db
+        .select()
+        .from(users)
+        .where(whereCondition)
+        .orderBy(desc(users.createdAt))
+        .limit(limit)
+        .offset(offset)
+      
+      const usersWithoutPassword = userResults.map(({ password: _, ...user }) => user)
+      return { users: usersWithoutPassword as User[], total: countResult[0].count }
+    } else {
+      const countResult = await this.db.select({ count: count() }).from(users)
+      
+      const userResults = await this.db
+        .select()
+        .from(users)
+        .orderBy(desc(users.createdAt))
+        .limit(limit)
+        .offset(offset)
+      
+      const usersWithoutPassword = userResults.map(({ password: _, ...user }) => user)
+      return { users: usersWithoutPassword as User[], total: countResult[0].count }
+    }
   }
 
   // Update user
@@ -114,40 +125,33 @@ export class UserModel {
     id: number,
     updateData: UpdateUserData,
   ): Promise<User | null> {
-    const updates: string[] = []
-    const values: any[] = []
+    const updateFields: Partial<NewUser> = {}
 
     if (updateData.username) {
-      updates.push('username = ?')
-      values.push(updateData.username)
+      updateFields.username = updateData.username
     }
 
     if (updateData.password) {
-      updates.push('password = ?')
-      values.push(await PasswordUtils.hashPassword(updateData.password))
+      updateFields.password = await PasswordUtils.hashPassword(updateData.password)
     }
 
     if (updateData.role) {
-      updates.push('role = ?')
-      values.push(updateData.role)
+      updateFields.role = updateData.role
     }
 
-    if (updates.length === 0) {
-      return this.getUserById(id)
+    if (Object.keys(updateFields).length === 0) {
+      return await this.getUserById(id)
     }
-
-    values.push(id)
-
-    const stmt = this.db.prepare(`
-      UPDATE users SET ${updates.join(', ')}
-      WHERE id = ?
-    `)
 
     try {
-      stmt.run(...values)
-      return this.getUserById(id)
+      await this.db
+        .update(users)
+        .set(updateFields)
+        .where(eq(users.id, id))
+
+      return await this.getUserById(id)
     } catch (error: any) {
-      if (error.code === 'SQLITE_CONSTRAINT_UNIQUE') {
+      if (error.message.includes('UNIQUE constraint failed')) {
         throw new Error('Username already exists')
       }
       throw error
@@ -155,9 +159,8 @@ export class UserModel {
   }
 
   // Delete user
-  deleteUser(id: number): boolean {
-    const stmt = this.db.prepare('DELETE FROM users WHERE id = ?')
-    const result = stmt.run(id)
+  async deleteUser(id: number): Promise<boolean> {
+    const result = await this.db.delete(users).where(eq(users.id, id))
     return result.changes > 0
   }
 
@@ -166,7 +169,7 @@ export class UserModel {
     username: string,
     password: string,
   ): Promise<User | null> {
-    const user = this.getUserByUsername(username)
+    const user = await this.getUserByUsername(username)
     if (!user) {
       return null
     }
@@ -178,20 +181,22 @@ export class UserModel {
 
     // Return user without password
     const { password: _, ...userWithoutPassword } = user
-    return userWithoutPassword
+    return userWithoutPassword as User
   }
 
   // Get user stats
-  getUserStats(): { total: number; byRole: Record<string, number> } {
+  async getUserStats(): Promise<{ total: number; byRole: Record<string, number> }> {
     // Total users
-    const totalStmt = this.db.prepare('SELECT COUNT(*) as count FROM users')
-    const { count: total } = totalStmt.get() as { count: number }
+    const [{ count: total }] = await this.db.select({ count: count() }).from(users)
 
     // Users by role
-    const roleStmt = this.db.prepare(
-      'SELECT role, COUNT(*) as count FROM users GROUP BY role',
-    )
-    const roleResults = roleStmt.all() as { role: string; count: number }[]
+    const roleResults = await this.db
+      .select({
+        role: users.role,
+        count: count(),
+      })
+      .from(users)
+      .groupBy(users.role)
 
     const byRole: Record<string, number> = {}
     roleResults.forEach(({ role, count }) => {
