@@ -63,7 +63,11 @@ export function CustomThemeProvider({ children }: ThemeProviderProps) {
     metaThemeColor.setAttribute('content', backgroundColor)
   }, [actualMode])
 
+<<<<<<< HEAD
   const contextValue = useMemo((): ThemeContextType => ({
+=======
+  const contextValue = useMemo(() => ({
+>>>>>>> e647c76
     currentMode: actualMode as 'light' | 'dark',
     themeMode: themeMode,
   }), [actualMode, themeMode])

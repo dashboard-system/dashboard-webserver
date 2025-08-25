@@ -6,7 +6,7 @@ interface UCIUpdateRequest {
   sectionType: string
   sectionName: string
   fileName: string
-  values: Record<string, object>
+  values: Record<string, unknown>
   lastModified?: string
 }
 

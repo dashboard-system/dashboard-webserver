@@ -63,6 +63,7 @@ function Music() {
   const playlist = useMemo(() => {
     if (!uciMusic) return []
 
+<<<<<<< HEAD
     return Object.values(uciMusic).map((entry) => {
       const typedEntry = entry as UCIMusicEntry
       return {
@@ -75,6 +76,17 @@ function Music() {
         src: typedEntry.values.src,
       }
     })
+=======
+    return (Object.values(uciMusic) as UCIMusicEntry[]).map((entry) => ({
+      id: entry.values.id,
+      title: entry.values.title.replace(/'/g, ''), // Remove quotes
+      artist: entry.values.artist.replace(/'/g, ''),
+      album: entry.values.album.replace(/'/g, ''),
+      duration: entry.values.duration,
+      cover: entry.values.cover,
+      src: entry.values.src,
+    }))
+>>>>>>> e647c76
   }, [uciMusic])
 
   const [currentSong, setCurrentSong] = useState(0)
@@ -335,11 +347,23 @@ function Music() {
               {playlist.map((song, index) => (
                 <ListItem 
                   key={song.id}
+<<<<<<< HEAD
+=======
+                  onClick={() => handleSongSelect(index)}
+>>>>>>> e647c76
                   divider
                   sx={{
                     borderRadius: 1,
                     mb: 1,
+<<<<<<< HEAD
                     p: 0
+=======
+                    cursor: 'pointer',
+                    ...(index === currentSong && {
+                      bgcolor: 'primary.light',
+                      '&:hover': { bgcolor: 'primary.light' }
+                    })
+>>>>>>> e647c76
                   }}
                 >
                   <ListItemButton

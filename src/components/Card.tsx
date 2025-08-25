@@ -100,12 +100,21 @@ export default function PageCard({
   const variantStyles = getVariantStyles(variant)
   const sizeStyles = getSizeStyles(size)
 
+<<<<<<< HEAD
   const combinedSx = useMemo(() => {
     const styles: Record<string, unknown> = { ...sizeStyles, ...variantStyles }
     if (minHeight) styles.minHeight = minHeight
     if (sx) Object.assign(styles, sx)
     return styles as SxProps<Theme>
   }, [sizeStyles, variantStyles, minHeight, sx])
+=======
+  const combinedSx = {
+    ...sizeStyles,
+    ...variantStyles,
+    ...(minHeight && { minHeight }),
+    ...sx
+  } as SxProps<Theme>
+>>>>>>> e647c76
 
   return (
     <Card 

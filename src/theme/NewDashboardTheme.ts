@@ -384,10 +384,17 @@ const dashboardComponents = (mode: PaletteMode) => ({
     styleOverrides: {
       root: {
         '& .MuiInputBase-input': {
+<<<<<<< HEAD
           userSelect: 'text' as const,
           WebkitUserSelect: 'text' as const,
           MozUserSelect: 'text' as const,
           msUserSelect: 'text' as const,
+=======
+          userSelect: 'text',
+          WebkitUserSelect: 'text',
+          MozUserSelect: 'text',
+          msUserSelect: 'text',
+>>>>>>> e647c76
         },
       },
     },
@@ -396,10 +403,17 @@ const dashboardComponents = (mode: PaletteMode) => ({
   MuiInputBase: {
     styleOverrides: {
       input: {
+<<<<<<< HEAD
         userSelect: 'text' as const,
         WebkitUserSelect: 'text' as const,
         MozUserSelect: 'text' as const,
         msUserSelect: 'text' as const,
+=======
+        userSelect: 'text',
+        WebkitUserSelect: 'text',
+        MozUserSelect: 'text',
+        msUserSelect: 'text',
+>>>>>>> e647c76
       },
     },
   },
@@ -553,7 +567,7 @@ export const createDashboardTheme = (mode: PaletteMode = 'dark') => {
     shape: {
       borderRadius: 12,
     },
-    components: dashboardComponents(mode),
+    components: dashboardComponents(mode) as any,
   })
 }
 
