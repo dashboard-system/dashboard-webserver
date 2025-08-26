@@ -2,7 +2,7 @@ FROM node:18-alpine AS builder
 
 WORKDIR /app
 COPY package*.json ./
-RUN npm ci --only=production && npm cache clean --force
+RUN npm ci && npm cache clean --force
 COPY . .
 RUN npm run build
 
@@ -12,9 +12,9 @@ RUN apk update && apk upgrade && apk add --no-cache dumb-init
 RUN addgroup -g 1001 -S nodejs && adduser -S dashboard -u 1001
 
 WORKDIR /app
+COPY --chown=dashboard:nodejs package*.json ./
+RUN npm ci --only=production && npm cache clean --force
 COPY --from=builder --chown=dashboard:nodejs /app/dist ./dist
-COPY --from=builder --chown=dashboard:nodejs /app/node_modules ./node_modules
-COPY --from=builder --chown=dashboard:nodejs /app/package*.json ./
 
 RUN mkdir -p /app/db /app/logs && chown -R dashboard:nodejs /app
 
