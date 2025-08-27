@@ -1,20 +1,27 @@
-FROM node:18-alpine AS builder
+FROM node:20-alpine AS builder
 
+RUN apk add --no-cache python3 make g++
 WORKDIR /app
 COPY package*.json ./
 RUN npm ci && npm cache clean --force
 COPY . .
 RUN npm run build
 
-FROM node:18-alpine AS production
+# Build UI
+WORKDIR /app/ui
+RUN npm ci && npm cache clean --force
+RUN npm run build
 
-RUN apk update && apk upgrade && apk add --no-cache dumb-init
+FROM node:20-alpine AS production
+
+RUN apk update && apk upgrade && apk add --no-cache dumb-init python3 make g++
 RUN addgroup -g 1001 -S nodejs && adduser -S dashboard -u 1001
 
 WORKDIR /app
 COPY --chown=dashboard:nodejs package*.json ./
 RUN npm ci --only=production && npm cache clean --force
 COPY --from=builder --chown=dashboard:nodejs /app/dist ./dist
+COPY --from=builder --chown=dashboard:nodejs /app/ui/dist ./ui/dist
 
 RUN mkdir -p /app/db /app/logs && chown -R dashboard:nodejs /app
 

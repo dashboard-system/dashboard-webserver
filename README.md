@@ -345,6 +345,10 @@ chmod +x ./script/*.sh
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
+---
+
+> **Part of the [Dashboard System](https://github.com/dashboard-system/dashboard-root)** - A complete multi-service aircraft control platform with MQTT integration, real-time communication, and modern web interface.
+
 ## 👥 Contributing
 
 1. Fork the repository
